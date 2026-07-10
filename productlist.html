@@ -601,9 +601,9 @@
       }).join('');
 
       const forms = ["ทั้งหมด","เม็ด","แคปซูล","ผง","เม็ดฟู่","ยาน้ำ","ยาฉีด","ครีม/ขี้ผึ้ง","เจล","หยอด","อื่นๆ"];
-      document.getElementById('formFilterChips').innerHTML = forms.map(f =>
-        ``<button class="filter-chip ${f==='ทั้งหมด'?'active':''}" data-form="${f}" onclick="setFormFilter('${f}')">${f}</button>`
-      ).join('');
+     document.getElementById('formFilterChips').innerHTML = forms.map(f =>
+  `<button class="filter-chip ${f==='ทั้งหมด'?'active':''}" data-form="${f}" onclick="setFormFilter('${f}')">${f}</button>`
+).join('');
 
       const statuses = {ทั้งหมด:"ทั้งหมด", active:"ใช้งานอยู่", inactive:"ปิดการใช้งาน"};
       document.getElementById('statusFilterChips').innerHTML = Object.entries(statuses).map(([k,v]) =>
