@@ -1,0 +1,1052 @@
+<!doctype html>
+<html lang="th" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบยาเฉพาะราย | Srinagarind Hospital</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background: linear-gradient(135deg, #1e1b3a 0%, #2d2b5e 50%, #6b64a8 100%);
+      min-height: 100vh;
+    }
+    .gradient-header { background: linear-gradient(135deg, #1e1b3a 0%, #4a4780 50%, #8b85c1 100%); }
+    .card-shadow { box-shadow: 0 10px 30px -5px rgba(30,27,58,0.3); }
+    .section-title {
+      border-left: 5px solid #8b85c1; padding-left: 12px;
+      font-weight: 800; color: #1e1b3a; font-size: 1.1rem;
+    }
+    .ward-dropdown { max-height: 250px; overflow-y: auto; z-index: 100; }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .input-field {
+      width: 100%; padding: 10px 14px;
+      border: 2px solid #e8c4d8; border-radius: 12px;
+      outline: none; transition: all 0.2s;
+      background: #fdf8fc; color: #1e1b3a;
+      font-family: 'Sarabun', sans-serif; font-weight: 600;
+    }
+    .input-field:focus { border-color: #8b85c1; background: white; box-shadow: 0 0 0 3px rgba(139,133,193,0.15); }
+    .input-field::placeholder { color: #c4a8cb; font-weight: 400; }
+    .field-label {
+      display: block; font-size: 0.8rem; font-weight: 700; color: #4a4780;
+      margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .select-field {
+      width: 100%; padding: 10px 14px;
+      border: 2px solid #e8c4d8; border-radius: 12px;
+      outline: none; background: #fdf8fc; color: #1e1b3a;
+      font-family: 'Sarabun', sans-serif; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .select-field:focus { border-color: #8b85c1; box-shadow: 0 0 0 3px rgba(139,133,193,0.15); }
+    .btn-primary {
+      background: linear-gradient(135deg, #4a4780, #8b85c1);
+      color: white; padding: 14px 28px; border-radius: 14px;
+      font-weight: 800; font-size: 1rem; transition: all 0.2s;
+      border: none; cursor: pointer; font-family: 'Sarabun', sans-serif;
+    }
+    .btn-primary:hover { background: linear-gradient(135deg, #3d3a70, #7a74b0); transform: translateY(-1px); }
+    .btn-primary:active { transform: scale(0.97); }
+
+    /* ====================================================
+       ✅ FIX 3: freq-radio checked → text สีขาว
+       ==================================================== */
+    .freq-radio:checked + label {
+      background: linear-gradient(135deg, #4a4780, #8b85c1) !important;
+      color: white !important;
+      border-color: #4a4780 !important;
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(74,71,128,0.3);
+    }
+    /* ให้ span ลูกใน label ก็เป็นสีขาวด้วย */
+    .freq-radio:checked + label span {
+      color: white !important;
+    }
+
+    .highlight-box {
+      background: linear-gradient(135deg, #1e1b3a, #4a4780);
+      border-radius: 24px; padding: 32px; color: white;
+    }
+    .nav-btn {
+      font-size: 0.7rem; font-weight: 800; padding: 6px 14px;
+      border-radius: 10px; border: 2px solid; background: white;
+      cursor: pointer; transition: all 0.2s; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .hidden { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 3px solid rgba(255,255,255,0.3); border-top-color: white;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    .unit-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #8b85c1, #c4a8cb);
+      color: white; padding: 4px 14px; border-radius: 20px;
+      font-size: 0.85rem; font-weight: 800; white-space: nowrap;
+    }
+    .ward-dropdown::-webkit-scrollbar { width: 4px; }
+    .ward-dropdown::-webkit-scrollbar-track { background: #f0eef8; }
+    .ward-dropdown::-webkit-scrollbar-thumb { background: #8b85c1; border-radius: 4px; }
+    .demo-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+      color: #1e1b3a; font-size: 0.6rem; font-weight: 900;
+      padding: 2px 8px; border-radius: 20px; letter-spacing: 0.1em;
+      text-transform: uppercase; vertical-align: middle; margin-left: 4px;
+    }
+    .lot-display {
+      background: linear-gradient(135deg, #0f0d1f, #1e1b3a);
+      border: 2px solid #4a4780; border-radius: 20px;
+      padding: 24px; text-align: center; position: relative; overflow: hidden;
+    }
+    .lot-display::before {
+      content: ''; position: absolute; top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, rgba(139,133,193,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .lot-number-text {
+      font-family: 'Courier New', monospace; font-size: 2.5rem;
+      font-weight: 900; letter-spacing: 0.15em;
+      background: linear-gradient(135deg, #c4a8cb, #e8c4d8, #8b85c1);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    @keyframes lotPulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+    .lot-loading { animation: lotPulse 1.2s ease-in-out infinite; color: #8b85c1; }
+    .lot-pill {
+      display: inline-flex; flex-direction: column; align-items: center;
+      padding: 8px 16px; border-radius: 12px;
+      background: rgba(139,133,193,0.15); border: 1px solid rgba(139,133,193,0.3);
+    }
+    .auto-warning-box {
+      border-radius: 14px; padding: 12px 16px;
+      border: 2px solid #fcd34d;
+      background: linear-gradient(135deg, #fffbeb, #fef9ee);
+      display: flex; align-items: flex-start; gap: 10px;
+    }
+    .auto-warning-box .warning-icon { font-size: 1.2rem; flex-shrink: 0; margin-top: 1px; }
+    .auto-warning-badge {
+      display: inline-block; font-size: 0.6rem; font-weight: 900;
+      padding: 2px 7px; border-radius: 20px;
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+      color: white; letter-spacing: 0.08em; text-transform: uppercase;
+      vertical-align: middle; margin-left: 6px;
+    }
+    .appt-highlight {
+      background: linear-gradient(135deg, #eff6ff, #f0eef8);
+      border: 2px solid #c4b5fd; border-radius: 14px; padding: 12px 16px;
+    }
+
+    /* Auto-calc badge */
+    .auto-calc-badge {
+      display: inline-block; font-size: 0.6rem; font-weight: 900;
+      padding: 2px 7px; border-radius: 20px;
+      background: linear-gradient(135deg, #10b981, #34d399);
+      color: white; letter-spacing: 0.06em; text-transform: uppercase;
+      vertical-align: middle; margin-left: 6px;
+    }
+  </style>
+</head>
+<body class="p-4 md:p-8">
+
+  <!-- LOGIN PAGE -->
+  <div id="loginPage" class="min-h-[90vh] flex items-center justify-center">
+    <div class="max-w-md w-full bg-white p-10 rounded-3xl shadow-2xl border border-purple-100 text-center">
+      <div class="inline-flex items-center justify-center w-20 h-20 rounded-2xl mb-5"
+           style="background: linear-gradient(135deg, #1e1b3a, #8b85c1);">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-black mb-1 uppercase tracking-tight" style="color:#1e1b3a;">ระบบยาเฉพาะราย</h1>
+      <p class="text-sm font-semibold mb-2" style="color:#8b85c1;">Extemporaneous Preparation System</p>
+      <p class="text-xs font-bold mb-6 text-gray-400 uppercase tracking-widest">Srinagarind Hospital · Pharmacy</p>
+      <form onsubmit="handleLogin(event)" class="space-y-4 text-left">
+        <div>
+          <label class="field-label">รหัสพนักงาน</label>
+          <input type="text" id="username" placeholder="Employee ID" required class="input-field text-center tracking-widest">
+        </div>
+        <div>
+          <label class="field-label">Password</label>
+          <input type="password" id="password" placeholder="••••••••" required class="input-field text-center tracking-widest">
+        </div>
+        <p id="loginError" class="text-red-500 font-bold text-sm hidden text-center pt-1">❌ รหัสผิดพลาด กรุณาลองใหม่ค่ะ</p>
+        <button type="submit" id="loginBtn" class="btn-primary w-full text-xl py-5 mt-2 text-center">เข้าสู่ระบบ 🚀</button>
+      </form>
+      <p class="text-[10px] text-gray-300 mt-6 font-bold">Demo: admin / 1234</p>
+    </div>
+  </div>
+
+
+  <!-- MAIN APP -->
+  <div id="mainApp" class="max-w-4xl mx-auto hidden">
+
+    <!-- Top Bar -->
+    <div class="flex flex-wrap items-center gap-2 mb-4">
+      <span class="text-xs font-bold text-purple-200 uppercase tracking-tight">ผู้บันทึก:</span>
+      <span id="displayUserName" class="text-sm font-black px-3 py-1 bg-white rounded-xl shadow-sm" style="color:#4a4780;"></span>
+      <span id="demoBadge" class="demo-badge hidden">Demo Mode</span>
+      <div class="flex gap-2 ml-auto flex-wrap">
+        <a href="dashboard.html" class="nav-btn" style="color:#4a4780; border-color:#c4a8cb;">📊 Dashboard</a>
+        <a href="productlist.html" class="nav-btn" style="color:#8b85c1; border-color:#8b85c1;">💊 จัดการรายการยา</a>
+        <button onclick="logout()" class="text-[10px] font-black text-red-400 hover:text-red-600 uppercase underline ml-1">Logout</button>
+      </div>
+    </div>
+
+    <div class="space-y-6">
+
+      <!-- HEADER -->
+      <header class="gradient-header p-8 rounded-3xl shadow-xl">
+        <div class="flex justify-between items-center text-white">
+          <div>
+            <h1 class="text-2xl font-black uppercase tracking-tight">💊 ระบบยาเฉพาะราย</h1>
+            <p class="text-base font-medium opacity-80 mt-1">Extemporaneous Preparation · Srinagarind</p>
+          </div>
+          <button onclick="location.reload()" class="text-xs bg-white/20 px-3 py-2 rounded-xl hover:bg-white/30 text-white border border-white/20 font-bold">
+            🔄 เริ่มใหม่
+          </button>
+        </div>
+      </header>
+
+
+      <!-- SECTION 1: ข้อมูลทั่วไป -->
+      <section class="bg-white p-6 rounded-2xl card-shadow space-y-4">
+        <h2 class="section-title">📋 ข้อมูลทั่วไป</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="field-label">วันที่ Order</label>
+            <input type="date" id="orderDate" class="input-field" onchange="onDateChange()">
+          </div>
+          <div>
+            <label class="field-label">HN</label>
+            <input type="text" id="hn" placeholder="ระบุ HN" class="input-field" onblur="fetchPatientData()">
+            <p id="hn-status" class="text-[10px] font-bold mt-1 ml-1 h-3"></p>
+          </div>
+          <div>
+            <label class="field-label">ชื่อ-นามสกุล</label>
+            <input type="text" id="patientName" placeholder="ชื่อคนไข้" class="input-field">
+          </div>
+          <div class="relative">
+            <label class="field-label">Ward</label>
+            <input type="text" id="wardInput" placeholder="ค้นหา Ward..."
+              class="input-field" onfocus="showWards()" oninput="filterWards()" autocomplete="off">
+            <div id="wardList" class="hidden absolute left-0 right-0 mt-1 bg-white border border-purple-100 rounded-xl shadow-2xl ward-dropdown" style="z-index:100;"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t border-purple-50">
+          <div>
+            <label class="field-label">น้ำหนัก</label>
+            <div class="relative">
+              <input type="number" id="patientWeight" step="0.1" placeholder="0.0" class="input-field" style="padding-right:40px;">
+              <span class="absolute right-3 top-2.5 text-xs font-black" style="color:#c4a8cb;">kg</span>
+            </div>
+          </div>
+          <div class="col-span-2 md:col-span-3">
+            <label class="field-label">
+              📅 วันนัดถัดไป
+              <span class="normal-case font-normal text-[10px] ml-1" style="color:#c4a8cb;">(Next Appointment)</span>
+            </label>
+            <div class="appt-highlight flex items-center gap-3">
+              <span class="text-lg">📅</span>
+              <input type="date" id="nextAppointment" class="input-field"
+                style="background:transparent; border-color:transparent; padding:4px 8px; flex:1;"
+                onchange="onNextApptChange()">
+              <span id="nextApptDisplay" class="text-xs font-black whitespace-nowrap" style="color:#4a4780;"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- SECTION 2: เลือกผลิตภัณฑ์ -->
+      <section class="bg-white p-6 rounded-2xl card-shadow space-y-5 border-t-8" style="border-color:#8b85c1;">
+        <h2 class="section-title">📦 เลือกผลิตภัณฑ์</h2>
+
+        <div>
+          <label class="field-label">รายการยา</label>
+          <select id="productSelect" class="select-field text-base font-black" onchange="onProductChange()">
+            <option value="">-- กรุณาเลือกรายการยา --</option>
+          </select>
+          <p id="product-loading" class="text-xs font-bold mt-1 ml-1" style="color:#8b85c1;">⏳ กำลังโหลดรายการยา...</p>
+        </div>
+
+        <!-- Product Info Card -->
+        <div id="productInfoCard" class="hidden rounded-2xl p-4 border-2" style="background:#fdf8fc; border-color:#e8c4d8;">
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
+            <div class="p-3 bg-white rounded-xl border" style="border-color:#e8c4d8;">
+              <div class="text-[10px] font-black uppercase" style="color:#8b85c1;">ชื่อสามัญ</div>
+              <div id="info-generic" class="text-sm font-black mt-1" style="color:#1e1b3a;">-</div>
+            </div>
+            <div class="p-3 bg-white rounded-xl border" style="border-color:#e8c4d8;">
+              <div class="text-[10px] font-black uppercase" style="color:#8b85c1;">ชื่อยี่ห้อ</div>
+              <div id="info-brand" class="text-sm font-black mt-1" style="color:#4a4780;">-</div>
+            </div>
+            <div class="p-3 bg-white rounded-xl border" style="border-color:#e8c4d8;">
+              <div class="text-[10px] font-black uppercase" style="color:#8b85c1;">ความแรง</div>
+              <div id="info-strength" class="text-sm font-black mt-1" style="color:#4a4780;">-</div>
+            </div>
+            <div class="p-3 bg-white rounded-xl border" style="border-color:#e8c4d8;">
+              <div class="text-[10px] font-black uppercase" style="color:#8b85c1;">อายุยา</div>
+              <div class="text-sm font-black mt-1" style="color:#c4a8cb;">
+                <span id="info-expiry-days">-</span> วัน
+              </div>
+            </div>
+            <div class="p-3 bg-white rounded-xl border" style="border-color:#e8c4d8;">
+              <div class="text-[10px] font-black uppercase" style="color:#8b85c1;">เก็บที่</div>
+              <div id="info-storage" class="text-sm font-black mt-1" style="color:#4a4780;">-</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- จำนวนวัตถุดิบ -->
+        <div>
+          <label class="field-label">จำนวนยาวัตถุดิบที่ใช้</label>
+          <div class="flex items-center gap-3">
+            <input type="number" id="rawAmount" placeholder="0" step="0.01"
+              class="input-field text-2xl font-black text-center"
+              style="max-width:160px; color:#4a4780;"
+              oninput="onRawAmountChange()">
+            <!-- ✅ FIX 1: rawUnitBadge ดึงจาก dosageForm -->
+            <span id="rawUnitBadge" class="unit-badge">—</span>
+          </div>
+          <p class="text-xs font-bold mt-1" style="color:#c4a8cb;">* หน่วยจะปรับตามรูปแบบวัตถุดิบของยาที่เลือก</p>
+          <!-- แสดง note auto-calc เฉพาะยาที่มี rule -->
+          <p id="autoCalcNote" class="hidden text-xs font-bold mt-1" style="color:#10b981;">
+            🤖 ระบบคำนวณจำนวน <span id="prepCountUnit2"></span> อัตโนมัติจากจำนวนวัตถุดิบ
+          </p>
+        </div>
+      </section>
+
+
+      <!-- SECTION 3: จำนวนที่จะผลิต -->
+      <section class="bg-white p-6 rounded-2xl card-shadow space-y-5">
+        <h2 class="section-title">🧪 จำนวนที่จะผลิต</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="field-label">ปริมาตรที่ผลิตต่อขวด</label>
+            <div class="flex items-center gap-3">
+              <input type="number" id="prepVolume" placeholder="0" step="1"
+                class="input-field text-3xl font-black text-center"
+                style="color:#4a4780;" oninput="updateSummary()">
+              <span id="prepVolumeUnit" class="font-black text-xl" style="color:#8b85c1;">ml</span>
+            </div>
+          </div>
+          <div>
+            <label class="field-label">จำนวนที่ผลิต</label>
+            <div class="flex items-center gap-3 p-3 rounded-xl border-2" style="background:#fdf8fc; border-color:#e8c4d8;">
+              <button onclick="changePrepCount(-1)"
+                class="w-12 h-12 bg-white rounded-full shadow-md text-2xl font-black transition-all active:scale-90"
+                style="color:#8b85c1; border:2px solid #e8c4d8;">−</button>
+              <span id="prepCountDisplay" class="text-4xl font-black w-16 text-center" style="color:#1e1b3a;">1</span>
+              <button onclick="changePrepCount(1)"
+                class="w-12 h-12 bg-white rounded-full shadow-md text-2xl font-black transition-all active:scale-90"
+                style="color:#8b85c1; border:2px solid #e8c4d8;">+</button>
+              <input type="hidden" id="prepCount" value="1">
+              <span id="prepCountUnit" class="font-black ml-2 text-lg" style="color:#8b85c1;">ขวด</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- SECTION 4: วิธีบริหารยา -->
+      <section class="bg-white p-6 rounded-2xl card-shadow space-y-5">
+        <h2 class="section-title">📝 วิธีบริหารยา</h2>
+
+        <div>
+          <label class="field-label mb-3 block">เลือกความถี่ในการใช้ยา</label>
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+
+            <input type="radio" name="freq" id="freq-1x1-hs" value="1x1 hs" class="hidden freq-radio">
+            <label for="freq-1x1-hs"
+              class="flex flex-col items-center justify-center p-3 border-2 rounded-xl cursor-pointer font-bold transition-all text-center"
+              style="border-color:#e8c4d8; color:#4a4780;" onclick="applyFrequency('1x1-hs')">
+              <span class="text-lg font-black">1×1</span>
+              <span class="text-xs">ก่อนนอน (hs)</span>
+            </label>
+
+            <input type="radio" name="freq" id="freq-1x1-ac" value="1x1 ac" class="hidden freq-radio">
+            <label for="freq-1x1-ac"
+              class="flex flex-col items-center justify-center p-3 border-2 rounded-xl cursor-pointer font-bold transition-all text-center"
+              style="border-color:#e8c4d8; color:#4a4780;" onclick="applyFrequency('1x1-ac')">
+              <span class="text-lg font-black">1×1</span>
+              <span class="text-xs">ก่อนอาหาร (ac)</span>
+            </label>
+
+            <input type="radio" name="freq" id="freq-1x2-pc" value="1x2 pc" class="hidden freq-radio">
+            <label for="freq-1x2-pc"
+              class="flex flex-col items-center justify-center p-3 border-2 rounded-xl cursor-pointer font-bold transition-all text-center"
+              style="border-color:#e8c4d8; color:#4a4780;" onclick="applyFrequency('1x2-pc')">
+              <span class="text-lg font-black">1×2</span>
+              <span class="text-xs">หลังอาหาร (pc)</span>
+            </label>
+
+            <input type="radio" name="freq" id="freq-1x3-pc" value="1x3 pc" class="hidden freq-radio">
+            <label for="freq-1x3-pc"
+              class="flex flex-col items-center justify-center p-3 border-2 rounded-xl cursor-pointer font-bold transition-all text-center"
+              style="border-color:#e8c4d8; color:#4a4780;" onclick="applyFrequency('1x3-pc')">
+              <span class="text-lg font-black">1×3</span>
+              <span class="text-xs">หลังอาหาร (pc)</span>
+            </label>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+
+            <input type="radio" name="freq" id="freq-1x2-ac" value="1x2 ac" class="hidden freq-radio">
+            <label for="freq-1x2-ac"
+              class="flex flex-col items-center justify-center p-3 border-2 rounded-xl cursor-pointer font-bold transition-all text-center"
+              style="border-color:#e8c4d8; color:#4a4780;" onclick="applyFrequency('1x2-ac')">
+              <span class="text-lg font-black">1×2</span>
+              <span class="text-xs">ก่อนอาหาร (ac)</span>
+            </label>
+
+            <input type="radio" name="freq" id="freq-1x3-ac" value="1x3 ac" class="hidden freq-radio">
+            <label for="freq-1x3-ac"
+              class="flex flex-col items-center justify-center p-3 border-2 rounded-xl cursor-pointer font-bold transition-all text-center"
+              style="border-color:#e8c4d8; color:#4a4780;" onclick="applyFrequency('1x3-ac')">
+              <span class="text-lg font-black">1×3</span>
+              <span class="text-xs">ก่อนอาหาร (ac)</span>
+            </label>
+
+            <input type="radio" name="freq" id="freq-prn" value="prn" class="hidden freq-radio">
+            <label for="freq-prn"
+              class="flex flex-col items-center justify-center p-3 border-2 rounded-xl cursor-pointer font-bold transition-all text-center"
+              style="border-color:#e8c4d8; color:#4a4780;" onclick="applyFrequency('prn')">
+              <span class="text-lg font-black">PRN</span>
+              <span class="text-xs">เมื่อมีอาการ</span>
+            </label>
+
+            <input type="radio" name="freq" id="freq-custom" value="custom" class="hidden freq-radio">
+            <label for="freq-custom"
+              class="flex flex-col items-center justify-center p-3 border-2 rounded-xl cursor-pointer font-bold transition-all text-center"
+              style="border-color:#e8c4d8; color:#4a4780;" onclick="applyFrequency('custom')">
+              <span class="text-lg font-black">✏️</span>
+              <span class="text-xs">ระบุเอง</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Sig Input -->
+        <div class="rounded-2xl p-5 border-2 space-y-4" style="background:#fdf8fc; border-color:#e8c4d8;">
+          <p class="text-xs font-black uppercase tracking-widest" style="color:#8b85c1;">📋 รายละเอียดวิธีใช้ยา</p>
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="text-sm font-bold whitespace-nowrap" style="color:#4a4780;">รับประทานครั้งละ</span>
+            <input type="number" id="dosePerTime" placeholder="0" step="0.5"
+              class="input-field text-xl font-black text-center"
+              style="max-width:100px; color:#4a4780;" oninput="buildSigText()">
+            <span id="doseUnit" class="text-sm font-black" style="color:#4a4780;">ml</span>
+          </div>
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="text-sm font-bold whitespace-nowrap" style="color:#4a4780;">วันละ</span>
+            <input type="number" id="timesPerDay" placeholder="0" min="1" max="6"
+              class="input-field text-xl font-black text-center"
+              style="max-width:80px; color:#4a4780;" oninput="buildSigText()">
+            <span class="text-sm font-bold" style="color:#4a4780;">ครั้ง</span>
+            <input type="text" id="timingText" placeholder="เช่น หลังอาหาร, ก่อนนอน"
+              class="input-field" style="flex:1; min-width:180px;" oninput="buildSigText()">
+          </div>
+          <div class="p-4 rounded-xl border-2 border-dashed" style="border-color:#c4a8cb;">
+            <p class="text-[10px] font-black uppercase mb-2" style="color:#c4a8cb;">👁️ Preview คำสั่งยาบนฉลาก:</p>
+            <p id="sigPreview" class="text-base font-black leading-relaxed" style="color:#1e1b3a;">
+              — กรุณากรอกข้อมูลวิธีใช้ยา —
+            </p>
+          </div>
+        </div>
+
+        <div>
+          <label class="field-label">⚠️ คำเตือน / หมายเหตุบนฉลาก</label>
+          <div id="autoWarningBox" class="auto-warning-box mb-3 hidden">
+            <span class="warning-icon">⚠️</span>
+            <div class="flex-1">
+              <div class="text-[10px] font-black uppercase mb-1" style="color:#b45309;">
+                ดึงอัตโนมัติจากรายการยา
+                <span class="auto-warning-badge">Auto</span>
+              </div>
+              <div id="autoWarningText" class="text-sm font-bold" style="color:#1e1b3a;"></div>
+            </div>
+          </div>
+          <textarea id="labelWarning" rows="2"
+            placeholder="คำเตือนจะถูกดึงมาจากรายการยาอัตโนมัติ หรือพิมพ์เพิ่มเติมได้เลยค่ะ"
+            class="input-field resize-none" oninput="buildSigText()"></textarea>
+          <p class="text-[10px] font-bold mt-1 ml-1" style="color:#c4a8cb;">💡 แก้ไขหรือเพิ่มเติมคำเตือนได้ที่ช่องนี้ค่ะ</p>
+        </div>
+      </section>
+
+
+      <!-- SECTION 5: LOT + Summary + Save -->
+      <section class="highlight-box shadow-2xl border-b-[12px]" style="border-color:#4a4780;">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
+          <div class="bg-white/10 p-4 rounded-2xl border border-white/20">
+            <div class="text-purple-200 text-xs font-black uppercase tracking-wider mb-2">ผลิตภัณฑ์</div>
+            <div id="sum-product" class="text-base font-black text-white leading-tight">— ยังไม่ได้เลือก —</div>
+          </div>
+          <div class="bg-white/10 p-4 rounded-2xl border border-white/20">
+            <div class="text-purple-200 text-xs font-black uppercase tracking-wider mb-2">ปริมาตร × จำนวน</div>
+            <div class="text-3xl font-black text-white">
+              <span id="sum-volume">0</span>
+              <span class="text-lg text-purple-300"> ml × </span>
+              <span id="sum-count">1</span>
+              <span id="sum-pkg-unit" class="text-lg text-purple-300"> ขวด</span>
+            </div>
+          </div>
+          <div class="bg-white/10 p-4 rounded-2xl border border-white/20">
+            <div class="text-purple-200 text-xs font-black uppercase tracking-wider mb-2">วิธีใช้</div>
+            <div id="sum-sig" class="text-sm font-black text-white leading-snug">— ยังไม่ได้ระบุ —</div>
+          </div>
+        </div>
+
+        <!-- LOT Number Display -->
+        <div class="lot-display mb-6">
+          <p class="text-[10px] font-black uppercase tracking-[0.25em] mb-3" style="color:#8b85c1;">🏷️ Lot Number (Auto Generated)</p>
+          <div id="lotDisplay" class="lot-number-text mb-4">ET______</div>
+          <div class="flex justify-center gap-3 flex-wrap mt-2">
+            <div class="lot-pill">
+              <span class="text-[10px] font-black uppercase" style="color:#8b85c1;">Prefix</span>
+              <span class="text-sm font-black text-white mt-1">ET</span>
+            </div>
+            <div class="lot-pill">
+              <span class="text-[10px] font-black uppercase" style="color:#8b85c1;">ปี พศ</span>
+              <span id="lot-year" class="text-sm font-black text-white mt-1">__</span>
+            </div>
+            <div class="lot-pill">
+              <span class="text-[10px] font-black uppercase" style="color:#8b85c1;">เดือน</span>
+              <span id="lot-month" class="text-sm font-black text-white mt-1">__</span>
+            </div>
+            <div class="lot-pill">
+              <span class="text-[10px] font-black uppercase" style="color:#8b85c1;">ลำดับ</span>
+              <span id="lot-seq" class="text-sm font-black text-white mt-1">___</span>
+            </div>
+          </div>
+          <p id="lot-status" class="text-xs font-bold mt-3" style="color:#8b85c1;">⏳ รอโหลดลำดับจาก Server...</p>
+          <input type="hidden" id="lotNumber" value="">
+        </div>
+
+        <button id="saveBtn" onclick="saveOrder()"
+          class="w-full p-7 rounded-3xl text-2xl font-black shadow-xl transition-all active:scale-95 border-2 border-white/20"
+          style="background: linear-gradient(135deg, #8b85c1, #c4a8cb); color:white; font-family:'Sarabun',sans-serif;">
+          💾 บันทึกและพิมพ์ฉลาก
+        </button>
+      </section>
+
+      <p class="text-center text-purple-200 text-[10px] py-10 uppercase font-black tracking-[0.2em]">
+        Srinagarind Hospital • Pharmacy Dept • Extemporaneous Preparation
+      </p>
+    </div>
+  </div>
+
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxenXJCDvsONEcMl3c3_j6xnrXUf1NSfaI6Kkx-oKF5yxiHSiHt-6E6m8nF5BNQariP/exec";
+
+    // =========================================
+    // 🔐 LOGIN
+    // =========================================
+    async function handleLogin(e) {
+      if (e) e.preventDefault();
+      const u = document.getElementById('username').value.trim();
+      const p = document.getElementById('password').value.trim();
+      const btn = document.getElementById('loginBtn');
+      const err = document.getElementById('loginError');
+      if (!u || !p) { err.textContent = "⚠️ กรุณากรอกรหัสพนักงานและ Password ค่ะ"; err.classList.remove('hidden'); return; }
+      btn.disabled = true;
+      btn.innerHTML = `<span class="spinner"></span> กำลังตรวจสอบ...`;
+      err.classList.add('hidden');
+      if (u === "admin" && p === "1234") {
+        sessionStorage.setItem('rxUser','Admin');
+        sessionStorage.setItem('rxDemoMode','true');
+        showMainApp(); return;
+      }
+      try {
+        const fd = new URLSearchParams();
+        fd.append("action","login"); fd.append("username",u); fd.append("password",p);
+        const res = await fetch(SCRIPT_URL, { method:'POST', body:fd });
+        const result = await res.json();
+        if (result.success) {
+          sessionStorage.setItem('rxUser', result.name);
+          sessionStorage.setItem('rxDemoMode','false');
+          showMainApp();
+        } else {
+          err.textContent = "❌ รหัสผิดพลาด กรุณาตรวจสอบอีกครั้งค่ะ";
+          err.classList.remove('hidden');
+          btn.disabled = false;
+          btn.innerHTML = "เข้าสู่ระบบ 🚀";
+        }
+      } catch(ex) {
+        err.textContent = "❌ เชื่อมต่อเซิร์ฟเวอร์ไม่ได้";
+        err.classList.remove('hidden');
+        btn.disabled = false;
+        btn.innerHTML = "เข้าสู่ระบบ 🚀";
+      }
+    }
+
+    function showMainApp() {
+      document.getElementById('loginPage').classList.add('hidden');
+      document.getElementById('mainApp').classList.remove('hidden');
+      const isDemo = sessionStorage.getItem('rxDemoMode') === 'true';
+      document.getElementById('displayUserName').textContent = sessionStorage.getItem('rxUser');
+      if (isDemo) document.getElementById('demoBadge').classList.remove('hidden');
+      document.getElementById('orderDate').valueAsDate = new Date();
+      fetchProductList();
+      generateLotNumber();
+    }
+
+    function logout() { sessionStorage.clear(); location.reload(); }
+    window.onload = () => { if (sessionStorage.getItem('rxUser')) showMainApp(); };
+
+
+    // =========================================
+    // 📅 NEXT APPOINTMENT
+    // =========================================
+    function onNextApptChange() {
+      const val = document.getElementById('nextAppointment').value;
+      const display = document.getElementById('nextApptDisplay');
+      if (!val) { display.textContent = ''; return; }
+      const d  = new Date(val);
+      const dd = d.getDate();
+      const mm = d.getMonth() + 1;
+      const yy = d.getFullYear() + 543;
+      const months = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+      const today = new Date(); today.setHours(0,0,0,0);
+      const appt  = new Date(val); appt.setHours(0,0,0,0);
+      const diff  = Math.round((appt - today) / (1000*60*60*24));
+      let diffText = diff === 0 ? '(วันนี้)' : diff > 0 ? `(อีก ${diff} วัน)` : `(ผ่านมา ${Math.abs(diff)} วัน)`;
+      display.textContent = `${dd} ${months[mm]} ${yy} ${diffText}`;
+      display.style.color = diff < 0 ? '#ef4444' : diff === 0 ? '#f59e0b' : '#4a4780';
+    }
+
+
+    // =========================================
+    // 🏷️ LOT NUMBER
+    // =========================================
+    function getThaiYear2Digit(dateStr) {
+      const d = dateStr ? new Date(dateStr) : new Date();
+      return String(d.getFullYear() + 543).slice(-2);
+    }
+    function getMonthStr(dateStr) {
+      const d = dateStr ? new Date(dateStr) : new Date();
+      return String(d.getMonth() + 1).padStart(2, '0');
+    }
+    function getLotPrefix(dateStr) {
+      return `ET${getThaiYear2Digit(dateStr)}${getMonthStr(dateStr)}`;
+    }
+    async function fetchNextSequence(prefix) {
+      if (sessionStorage.getItem('rxDemoMode') === 'true') return Math.floor(Math.random() * 5) + 1;
+      try {
+        const res  = await fetch(`${SCRIPT_URL}?action=getNextLotSeq&prefix=${prefix}`);
+        const data = await res.json();
+        return data.nextSeq || 1;
+      } catch(e) { return 1; }
+    }
+    async function generateLotNumber(dateStr) {
+      const lotDisplay = document.getElementById('lotDisplay');
+      const lotStatus  = document.getElementById('lot-status');
+      const lotInput   = document.getElementById('lotNumber');
+      const selectedDate = dateStr || document.getElementById('orderDate')?.value || null;
+      const prefix = getLotPrefix(selectedDate);
+      const yy = getThaiYear2Digit(selectedDate);
+      const mm = getMonthStr(selectedDate);
+      lotDisplay.textContent = `${prefix}...`;
+      lotDisplay.classList.add('lot-loading');
+      lotStatus.textContent = "⏳ กำลังโหลดลำดับ...";
+      const seq    = await fetchNextSequence(prefix);
+      const seqStr = String(seq).padStart(3, '0');
+      const fullLot = `${prefix}${seqStr}`;
+      lotDisplay.textContent = fullLot;
+      lotDisplay.classList.remove('lot-loading');
+      document.getElementById('lot-year').textContent  = yy;
+      document.getElementById('lot-month').textContent = mm;
+      document.getElementById('lot-seq').textContent   = seqStr;
+      lotInput.value = fullLot;
+      const isDemo = sessionStorage.getItem('rxDemoMode') === 'true';
+      lotStatus.textContent = isDemo ? "⚠️ Demo Mode — LOT นี้ไม่ได้บันทึกจริง" : `✅ LOT พร้อมใช้งาน (ลำดับที่ ${seq} ของเดือนนี้)`;
+      lotStatus.style.color = isDemo ? "#f59e0b" : "#a78bfa";
+      return fullLot;
+    }
+    function onDateChange() { generateLotNumber(document.getElementById('orderDate').value); }
+
+
+    // =========================================
+    // 🏥 WARD LIST
+    // =========================================
+    const wards = [
+      "OPD PED","OPD","2ก","2ข","2ค","2ง","2จ","2ฉ","3ก","3ข","3ค","3ง","3จ","3ฉ",
+      "4ก","4ข","4ค","4ง","4จ","4ฉ","5ก","5ข","5ค","5ง","5จ","5ฉ",
+      "6ก","6ข","6ค","6ง","6จ","6ฉ",
+      "8A (ACRO)","AE1","AE2","AE3","AE4","Burn Unit",
+      "CCU","CVT ICU","LR","MICU 1","MICU 2","MICU 3",
+      "NSICU","NICU","PICU","SCTU","SICU 1","SICU 2","SICU 3",
+      "IMC 2ง","IMC 3ข","IMC 3จ","IMC 4ก","IMC 4ข","IMC 4ค",
+      "กว.6/1","กว.6/2","กว.7/1","กว.7/2",
+      "สว.1/8B","สว.1/8C","สว.1/9A","สว.1/9B","สว.1/9C",
+      "สว.1/11","สว.1/12","สว.1/13","สว.1/14","สว.1/15",
+      "จิตเวช","สงฆ์อาพาธ","Nursing Home"
+    ];
+    function showWards() { document.getElementById('wardList').classList.remove('hidden'); renderWards(wards); }
+    function renderWards(items) {
+      document.getElementById('wardList').innerHTML = items.map(w =>
+        `<div class="p-3 hover:bg-purple-50 cursor-pointer border-b border-purple-50 font-black text-center text-sm"
+              style="color:#4a4780;" onclick="selectWard('${w}')">${w}</div>`
+      ).join('');
+    }
+    function filterWards() {
+      const val = document.getElementById('wardInput').value.toLowerCase();
+      renderWards(wards.filter(w => w.toLowerCase().includes(val)));
+    }
+    function selectWard(w) {
+      document.getElementById('wardInput').value = w;
+      document.getElementById('wardList').classList.add('hidden');
+    }
+    document.addEventListener('click', e => {
+      const wl = document.getElementById('wardList');
+      const wi = document.getElementById('wardInput');
+      if (wl && !wl.contains(e.target) && e.target !== wi) wl.classList.add('hidden');
+    });
+
+
+    // =========================================
+    // 💊 PRODUCT LIST
+    // =========================================
+    let productData = [];
+
+    async function fetchProductList() {
+      const loadingMsg = document.getElementById('product-loading');
+      const isDemo = sessionStorage.getItem('rxDemoMode') === 'true';
+      if (isDemo) {
+        productData = [
+          { id:"1", genericName:"Omeprazole",        brandName:"Losec",      strength:"20 mg/cap",  dosageForm:"แคปซูล", outputType:"ยาน้ำแขวนตะกอน", productUnit:"ml", packageUnit:"ขวด",    expiryDays:"30", storage:"ตู้เย็น (2-8°C)",  status:"active", defaultWarning:"เขย่าขวดก่อนใช้, เก็บในตู้เย็น (2-8°C)" },
+          { id:"2", genericName:"Amoxicillin",        brandName:"Amoxil",     strength:"500 mg/cap", dosageForm:"แคปซูล", outputType:"ยาน้ำแขวนตะกอน", productUnit:"ml", packageUnit:"ขวด",    expiryDays:"14", storage:"ตู้เย็น (2-8°C)",  status:"active", defaultWarning:"เขย่าขวดก่อนใช้" },
+          { id:"3", genericName:"Prednisolone",       brandName:"-",          strength:"5 mg/tab",   dosageForm:"เม็ด",   outputType:"สารละลาย",         productUnit:"ml", packageUnit:"ขวด",    expiryDays:"7",  storage:"อุณหภูมิห้อง",     status:"active", defaultWarning:"" },
+          { id:"4", genericName:"Tacrolimus",         brandName:"Prograf",    strength:"1 mg/cap",   dosageForm:"แคปซูล", outputType:"ยาน้ำแขวนตะกอน", productUnit:"ml", packageUnit:"ขวด",    expiryDays:"56", storage:"ตู้เย็น (2-8°C)",  status:"active", defaultWarning:"เขย่าขวดก่อนใช้, เก็บในตู้เย็น (2-8°C), ป้องกันแสง" },
+          { id:"5", genericName:"Metronidazole",      brandName:"Flagyl",     strength:"250 mg/tab", dosageForm:"เม็ด",   outputType:"ยาน้ำแขวนตะกอน", productUnit:"ml", packageUnit:"Syringe",expiryDays:"30", storage:"อุณหภูมิห้อง",     status:"active", defaultWarning:"เขย่าขวดก่อนใช้, ป้องกันแสง" },
+          { id:"6", genericName:"6-Mercaptopurine",   brandName:"Purinetone", strength:"5 mg/ml",    dosageForm:"เม็ด",   outputType:"ยาน้ำแขวนตะกอน", productUnit:"ml", packageUnit:"ขวด",    expiryDays:"35", storage:"ตู้เย็น (2-8°C)",  status:"active", defaultWarning:"เขย่าขวดก่อนใช้, เก็บในตู้เย็น (2-8°C)" },
+        ];
+        populateProductDropdown(productData);
+        loadingMsg.textContent = `⚠️ Demo Mode — ข้อมูลตัวอย่าง (${productData.length} รายการ)`;
+        loadingMsg.style.color = "#f59e0b";
+        return;
+      }
+      try {
+        const res  = await fetch(`${SCRIPT_URL}?action=getProductList`);
+        const data = await res.json();
+        if (data && data.length > 0) {
+          productData = data.filter(p => p.status !== 'inactive');
+          populateProductDropdown(productData);
+          loadingMsg.textContent = `✅ โหลดรายการยาสำเร็จ (${productData.length} รายการ)`;
+          loadingMsg.style.color = "#8b85c1";
+        } else {
+          loadingMsg.textContent = "⚠️ ไม่พบรายการยา";
+          loadingMsg.style.color = "#c4a8cb";
+        }
+      } catch(e) {
+        loadingMsg.textContent = "❌ โหลดรายการยาไม่ได้";
+        loadingMsg.style.color = "#ef4444";
+      }
+    }
+
+    function populateProductDropdown(data) {
+      const select = document.getElementById('productSelect');
+      while (select.options.length > 1) select.remove(1);
+      data.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id;
+        opt.textContent = `${p.genericName} (${p.brandName}) — ${p.strength}`;
+        opt.dataset.generic     = p.genericName    || '';
+        opt.dataset.brand       = p.brandName      || '';
+        opt.dataset.strength    = p.strength       || '';
+        opt.dataset.dosageForm  = p.dosageForm     || '';
+        opt.dataset.productUnit = p.productUnit    || 'ml';
+        opt.dataset.packageUnit = p.packageUnit    || 'ขวด';
+        opt.dataset.expiry      = p.expiryDays     || '';
+        opt.dataset.storage     = p.storage        || '';
+        opt.dataset.warning     = p.defaultWarning || '';
+        select.appendChild(opt);
+      });
+    }
+
+
+    // =========================================
+    // 📦 ON PRODUCT CHANGE
+    // =========================================
+   const AUTO_CALC_RULES = {
+    "6-mercaptopurine": {
+      prepVolumeFixed: 50,
+      prepCountDivisor: 5
+    },
+    "sirolimus": {
+      prepVolumeFixed: 20,
+      prepCountDivisor: 1
+    }
+  };
+
+    function getAutoCalcRule(genericName) {
+      const key = (genericName || '').toLowerCase().trim();
+      return AUTO_CALC_RULES[key] || null;
+    }
+
+    function onProductChange() {
+      const select   = document.getElementById('productSelect');
+      const opt      = select.options[select.selectedIndex];
+      const infoCard = document.getElementById('productInfoCard');
+
+      if (!select.value) {
+        infoCard.classList.add('hidden');
+        document.getElementById('rawUnitBadge').textContent   = '—';
+        document.getElementById('sum-product').textContent    = '— ยังไม่ได้เลือก —';
+        document.getElementById('prepVolumeUnit').textContent = 'ml';
+        document.getElementById('prepCountUnit').textContent  = 'ขวด';
+        document.getElementById('sum-pkg-unit').textContent   = ' ขวด';
+        document.getElementById('doseUnit').textContent       = 'ml';
+        document.getElementById('autoWarningBox').classList.add('hidden');
+        document.getElementById('labelWarning').value         = '';
+        document.getElementById('autoCalcNote').classList.add('hidden');
+        return;
+      }
+
+      const dosageForm  = opt.dataset.dosageForm  || '—';
+      const productUnit = opt.dataset.productUnit || 'ml';
+      const packageUnit = opt.dataset.packageUnit || 'ขวด';
+      const warning     = opt.dataset.warning     || '';
+      const storage     = opt.dataset.storage     || '-';
+      const genericName = opt.dataset.generic     || '';
+
+      infoCard.classList.remove('hidden');
+      document.getElementById('info-generic').textContent     = genericName;
+      document.getElementById('info-brand').textContent       = opt.dataset.brand    || '-';
+      document.getElementById('info-strength').textContent    = opt.dataset.strength || '-';
+      document.getElementById('info-expiry-days').textContent = opt.dataset.expiry   || '-';
+      document.getElementById('info-storage').textContent     = storage;
+
+      document.getElementById('rawUnitBadge').textContent   = dosageForm;
+
+      document.getElementById('prepVolumeUnit').textContent = productUnit;
+      document.getElementById('prepCountUnit').textContent  = packageUnit;
+      document.getElementById('sum-pkg-unit').textContent   = ` ${packageUnit}`;
+      document.getElementById('doseUnit').textContent       = productUnit;
+      document.getElementById('sum-product').textContent    = opt.textContent;
+
+      const autoBox  = document.getElementById('autoWarningBox');
+      const autoText = document.getElementById('autoWarningText');
+      if (warning && warning.trim()) {
+        autoBox.classList.remove('hidden');
+        autoText.textContent = warning;
+        document.getElementById('labelWarning').value = warning;
+      } else {
+        autoBox.classList.add('hidden');
+        document.getElementById('labelWarning').value = '';
+      }
+
+      const rule = getAutoCalcRule(genericName);
+      const noteEl = document.getElementById('autoCalcNote');
+      const noteUnit = document.getElementById('prepCountUnit2');
+
+      if (rule) {
+        noteEl.classList.remove('hidden');
+        noteUnit.textContent = packageUnit;
+        if (rule.prepVolumeFixed) {
+          document.getElementById('prepVolume').value = rule.prepVolumeFixed;
+          updateSummary();
+        }
+        onRawAmountChange();
+      } else {
+        noteEl.classList.add('hidden');
+      }
+
+      buildSigText();
+    }
+
+
+    // =========================================
+    // 🔢 AUTO-CALC PREP COUNT
+    // =========================================
+    function onRawAmountChange() {
+      const select      = document.getElementById('productSelect');
+      const opt         = select.options[select.selectedIndex];
+      const genericName = opt?.dataset?.generic || '';
+      const rawVal      = parseFloat(document.getElementById('rawAmount').value);
+      const rule        = getAutoCalcRule(genericName);
+
+      if (rule && rule.prepCountDivisor && rawVal > 0) {
+        const calcCount = Math.floor(rawVal / rule.prepCountDivisor);
+        const finalCount = Math.max(1, calcCount);
+        document.getElementById('prepCount').value = finalCount;
+        document.getElementById('prepCountDisplay').textContent = finalCount;
+        document.getElementById('sum-count').textContent = finalCount;
+      }
+    }
+
+
+    // =========================================
+    // 🔄 HN LOOKUP (ดึงเฉพาะชื่อ-นามสกุล อัตโนมัติและไม่ดึงยาเดิม)
+    // =========================================
+    async function fetchPatientData() {
+      const hn      = document.getElementById('hn').value.trim();
+      const status  = document.getElementById('hn-status');
+      const isDemo  = sessionStorage.getItem('rxDemoMode') === 'true';
+      
+      if (!hn) { status.innerText = ""; return; }
+      status.innerText = "⏳ กำลังค้นหา...";
+      status.style.color = "#8b85c1";
+      
+      if (isDemo) { status.innerText = "⚠️ Demo Mode"; status.style.color = "#f59e0b"; return; }
+      
+      try {
+        const res  = await fetch(`${SCRIPT_URL}?action=getLatestOrder&hn=${hn}`);
+        const data = await res.json();
+        
+        if (data && data.hn) {
+          // ดึงเฉพาะชื่อ-นามสกุล มาใส่ให้โดยอัตโนมัติ (ข้ามน้ำหนัก และวอร์ด เพื่อให้กรอกใหม่ตามความจริง)
+          document.getElementById('patientName').value = data.patientName || "";
+          status.innerText = "✅ พบคนไข้ (ดึงชื่อเรียบร้อย)";
+          status.style.color = "#10b981"; 
+        } else {
+          status.innerText = "🔹 คนไข้ใหม่ (กรอกข้อมูลปกติ)";
+          status.style.color = "#c4a8cb";
+        }
+      } catch(e) {
+        status.innerText = "❌ เชื่อมเซิร์ฟเวอร์ผิดพลาด";
+        status.style.color = "#ef4444";
+      }
+    }
+
+
+    // =========================================
+    // 💊 FREQUENCY PRESET
+    // =========================================
+    const freqMap = {
+      '1x1-hs': { times:1, timing:'ก่อนนอน' },
+      '1x1-ac': { times:1, timing:'ก่อนอาหาร' },
+      '1x2-pc': { times:2, timing:'หลังอาหาร เช้า-เย็น' },
+      '1x3-pc': { times:3, timing:'หลังอาหาร เช้า-กลางวัน-เย็น' },
+      '1x2-ac': { times:2, timing:'ก่อนอาหาร เช้า-เย็น' },
+      '1x3-ac': { times:3, timing:'ก่อนอาหาร เช้า-กลางวัน-เย็น' },
+      'prn':    { times:'', timing:'เมื่อมีอาการ' },
+      'custom': { times:'', timing:'' },
+    };
+    function applyFrequency(key) {
+      const preset = freqMap[key];
+      if (!preset) return;
+      document.getElementById('timesPerDay').value = preset.times;
+      document.getElementById('timingText').value  = preset.timing;
+      buildSigText();
+    }
+
+
+    // =========================================
+    // 📋 BUILD SIG TEXT
+    // =========================================
+    function buildSigText() {
+      const dose    = document.getElementById('dosePerTime').value;
+      const unit    = document.getElementById('doseUnit').textContent;
+      const times   = document.getElementById('timesPerDay').value;
+      const timing  = document.getElementById('timingText').value;
+      const warning = document.getElementById('labelWarning').value;
+      let sig = "";
+      if (dose)    sig += `รับประทานครั้งละ ${dose} ${unit}`;
+      if (times)   sig += ` วันละ ${times} ครั้ง`;
+      if (timing)  sig += ` ${timing}`;
+      if (warning) sig += `\n⚠️ ${warning}`;
+      const preview = sig || "— กรุณากรอกข้อมูลวิธีใช้ยา —";
+      document.getElementById('sigPreview').textContent = preview;
+      document.getElementById('sum-sig').textContent    = sig || "— ยังไม่ได้ระบุ —";
+    }
+
+
+    // =========================================
+    // 🔢 PREP COUNT +/-
+    // =========================================
+    function changePrepCount(val) {
+      const hidden = document.getElementById('prepCount');
+      const newVal = Math.max(1, parseInt(hidden.value) + val);
+      hidden.value = newVal;
+      document.getElementById('prepCountDisplay').textContent = newVal;
+      document.getElementById('sum-count').textContent = newVal;
+    }
+    function updateSummary() {
+      document.getElementById('sum-volume').textContent = document.getElementById('prepVolume').value || '0';
+      document.getElementById('sum-count').textContent  = document.getElementById('prepCount').value  || '1';
+    }
+
+
+    // =========================================
+    // 💾 SAVE ORDER
+    // =========================================
+    async function saveOrder() {
+      const saveBtn = document.getElementById('saveBtn');
+      const isDemo  = sessionStorage.getItem('rxDemoMode') === 'true';
+      const hn          = document.getElementById('hn').value.trim();
+      const pName       = document.getElementById('patientName').value.trim();
+      const productSel  = document.getElementById('productSelect');
+      const prepVolume  = document.getElementById('prepVolume').value;
+      const dosePerTime = document.getElementById('dosePerTime').value;
+      const lotNumber   = document.getElementById('lotNumber').value;
+      if (!hn || !pName)     { alert("⚠️ กรุณาระบุ HN และชื่อคนไข้ค่ะ"); return; }
+      if (!productSel.value) { alert("⚠️ กรุณาเลือกรายการยาค่ะ"); return; }
+      if (!prepVolume)       { alert("⚠️ กรุณาระบุปริมาตรที่ผลิตค่ะ"); return; }
+      if (!dosePerTime)      { alert("⚠️ กรุณาระบุขนาดยาต่อครั้งค่ะ"); return; }
+      if (!lotNumber)        { alert("⚠️ ยังไม่มีเลข LOT กรุณารอสักครู่ค่ะ"); return; }
+
+      const v   = id => document.getElementById(id).value;
+      const opt = productSel.options[productSel.selectedIndex];
+      const formData = new URLSearchParams();
+      formData.append("action",          "saveRxOrder");
+      formData.append("orderDate",       v('orderDate'));
+      formData.append("lotNumber",       lotNumber);
+      formData.append("hn",              hn);
+      formData.append("patientName",     pName);
+      formData.append("patientWeight",   v('patientWeight'));
+      formData.append("ward",            v('wardInput'));
+      formData.append("nextAppointment", v('nextAppointment'));
+      formData.append("productId",       productSel.value);
+      formData.append("productName",     opt.textContent);
+      formData.append("genericName",     opt.dataset.generic);
+      formData.append("brandName",       opt.dataset.brand);
+      formData.append("strength",        opt.dataset.strength);
+      formData.append("dosageForm",      opt.dataset.dosageForm);
+      formData.append("productUnit",     opt.dataset.productUnit);
+      formData.append("packageUnit",     opt.dataset.packageUnit);
+      formData.append("expiryDays",      opt.dataset.expiry);
+      formData.append("storage",         opt.dataset.storage);
+      formData.append("rawAmount",       v('rawAmount'));
+      formData.append("prepVolume",      prepVolume);
+      formData.append("prepCount",       v('prepCount'));
+      formData.append("dosePerTime",     dosePerTime);
+      formData.append("timesPerDay",     v('timesPerDay'));
+      formData.append("timingText",      v('timingText'));
+      formData.append("sigText",         document.getElementById('sigPreview').textContent);
+      formData.append("labelWarning",    v('labelWarning'));
+      formData.append("recordedBy",      sessionStorage.getItem('rxUser'));
+
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = `<span class="spinner"></span> กำลังบันทึก...`;
+
+      if (isDemo) {
+        await new Promise(r => setTimeout(r, 900));
+        window.open("label.html?" + formData.toString(), "_blank");
+        alert(`⚠️ Demo Mode\nLOT: ${lotNumber}\nไม่ได้บันทึกจริง`);
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = "💾 บันทึกและพิมพ์ฉลาก";
+        return;
+      }
+      try {
+        await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: formData });
+        window.open("label.html?" + formData.toString(), "_blank");
+        alert(`✅ บันทึกสำเร็จค่ะ!\n🏷️ LOT: ${lotNumber}`);
+        location.reload();
+      } catch(e) {
+        alert("❌ เกิดข้อผิดพลาด: " + e.message);
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = "💾 บันทึกและพิมพ์ฉลาก";
+      }
+    }
+  </script>
+</body>
+</html>

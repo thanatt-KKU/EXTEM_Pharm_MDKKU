@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบพิมพ์ฉลากยาเฉพาะราย | Srinagarind Hospital</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <style>
+    * { 
+      box-sizing: border-box;
+      font-family: 'Sarabun', sans-serif; 
+      line-height: 1.3; 
+    }
+    body { background-color: #f1f5f9; }
+
+    [contenteditable="true"]:hover { 
+      background: #fff9c4; 
+      outline: 2px solid #000000; 
+      cursor: text; 
+    }
+
+    @media print {
+      .no-print { display: none !important; }
+      @page { size: auto; margin: 0mm; }
+      body { background: #ffffff; margin: 0 !important; padding: 0 !important; }
+      .print-area:not(.active) { display: none !important; }
+      .label-box { 
+        box-shadow: none !important; 
+        border: none !important; 
+        margin: 0 auto 5mm auto !important; 
+        page-break-after: always; 
+      }
+      .bag-label-pair {
+        page-break-inside: avoid !important;
+      }
+    }
+
+    .label-box-thermal {
+      background: #ffffff !important;
+      border: none !important; 
+    }
+    .label-box-thermal * {
+      color: #000000 !important;
+      font-weight: 800 !important;
+    }
+
+    /* ══════════════════════════════════════
+        ฉลากมาตรฐาน (ถุง / ขวด)
+       ══════════════════════════════════════ */
+    .label-standard { 
+      width: 3.5in; 
+      height: 2.48in; 
+      /* ปรับเพิ่ม padding-top อีก 0.3mm (ลดตัวลบจาก 1.5mm เหลือ 1.2mm) เพื่อเลื่อนเนื้อหาลงมา */
+      padding: calc(1.3cm - 1.2mm) 0.25in 0.15in 0.25in; 
+      margin: 15px auto; 
+      box-sizing: border-box; 
+      position: relative; 
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      border-radius: 0px;
+    }
+
+    /* ══════════════════════════════════════
+        ฉลากเช็คฉลาก
+       ══════════════════════════════════════ */
+    .label-check {
+      width: 3.5in;
+      height: 2.48in;
+      margin: 15px auto;
+      box-sizing: border-box;
+      position: relative;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      overflow: hidden;
+      background: #ffffff !important;
+      border: none !important; 
+    }
+
+    .check-label-header {
+      font-size: 11px !important;
+      font-weight: 900 !important;
+      text-align: center;
+      border-bottom: 1.5px solid #000;
+      padding: 2px 0 3px 0;
+      letter-spacing: 0.5px;
+      color: #000 !important;
+      width: 100%;
+    }
+
+    .check-left {
+      flex: 1;
+      padding: 0 6px 0 6px; 
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      gap: 1px;
+      overflow: hidden;
+      border-right: none !important; 
+    }
+
+    .check-right {
+      width: 0.95in; 
+      min-width: 0.95in;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px; 
+      position: relative;
+    }
+
+    .barcode-rotate-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      transform: rotate(90deg);
+      transform-origin: center center;
+      width: 2.0in;
+      height: 0.9in;
+    }
+
+    .barcode-rotate-wrap svg {
+      width: 100% !important;
+      height: auto !important;
+      display: block;
+    }
+
+    .barcode-lot-rotated {
+      font-size: 7px !important;
+      font-weight: 900 !important;
+      text-align: center;
+      margin-top: 1px;
+      letter-spacing: 0.3px;
+      color: #000 !important;
+      white-space: nowrap;
+    }
+
+    /* ══════════════════════════════════════
+        ฉลากเล็กติด Syringe
+       ══════════════════════════════════════ */
+    .label-syringe {
+      width: 10.1cm;
+      height: 2.5cm;
+      margin: 15px auto;
+      box-sizing: border-box;
+      position: relative;
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: stretch;
+      overflow: hidden;
+      background: transparent !important;
+    }
+
+    .syringe-die-cut {
+      width: 5.0cm;
+      height: 2.5cm;
+      padding: 1.5mm 2.5mm;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background: #ffffff !important;
+    }
+
+    .text-thermal-heavy { font-weight: 900 !important; }
+  </style>
+</head>
+<body class="min-h-screen pb-20">
+
+  <nav class="no-print sticky top-0 z-50 bg-slate-900 text-white shadow-lg py-3 px-4 mb-6">
+    <div class="max-w-5xl mx-auto flex justify-between items-center">
+      <button onclick="history.back()" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 rounded-xl transition-all font-bold text-sm text-white">
+        <span>⬅️</span> แก้ไขข้อมูล (ย้อนกลับ)
+      </button>
+      <div class="text-center hidden md:block">
+        <p class="text-xs font-bold text-purple-300 tracking-widest uppercase">Extemporaneous Preparation System</p>
+        <p class="text-[10px] text-slate-400">Srinagarind Hospital</p>
+      </div>
+      <div class="flex gap-2">
+        <a href="index.html" class="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 rounded-xl transition-all font-bold text-sm text-white">
+          <span>➕</span> เพิ่มเคสใหม่
+        </a>
+        <a href="dashboard.html" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl transition-all font-bold text-sm text-white">
+          <span>📊</span> Dashboard
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-4xl mx-auto py-2 px-4 no-print text-center">
+    <div class="mb-6 bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+      <h1 class="text-xl font-black text-slate-800 uppercase tracking-tight">🖨️ จัดการพิมพ์ฉลากยาเฉพาะราย</h1>
+      <p class="text-sm text-slate-500 mt-1">
+        ผู้ป่วย: <span id="topPatientInfo" class="font-black text-indigo-600">กำลังโหลดข้อมูลจากคลัง...</span>
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+
+      <div id="card-bag" onclick="selectSection('bag')"
+           class="bg-white p-5 rounded-2xl border-4 border-slate-200 cursor-pointer transition-all hover:border-indigo-400 shadow-sm">
+        <div class="text-3xl mb-1">🛍️</div>
+        <h3 class="font-black text-indigo-700 text-base">1. ฉลากใหญ่ติดถุง</h3>
+        <p class="text-xs text-slate-400 mt-1">พิมพ์ 2 ฉลาก: ฉลากปกติ + ฉลากเช็คฉลาก (พร้อม Barcode)</p>
+      </div>
+
+      <div id="card-product" onclick="selectSection('product')"
+           class="bg-white p-5 rounded-2xl border-4 border-slate-200 cursor-pointer transition-all hover:border-purple-400 shadow-sm">
+        <div class="text-3xl mb-1">🍾</div>
+        <h3 class="font-black text-purple-700 text-base">2. ฉลากติดขวดยา / ซองยา</h3>
+        <p class="text-xs text-slate-400 mt-1">พิมพ์ออกจำนวน 1 แผ่น (สั่งเพิ่มจำนวนชุดในหน้าต่างพิมพ์ได้)</p>
+      </div>
+
+      <div id="card-syringe" onclick="selectSection('syringe')"
+           class="bg-white p-5 rounded-2xl border-4 border-slate-200 cursor-pointer transition-all hover:border-amber-400 shadow-sm">
+        <div class="text-3xl mb-1">💉</div>
+        <h3 class="font-black text-amber-700 text-base">3. ฉลากเล็กติด Syringe (คู่)</h3>
+        <p class="text-xs text-slate-400 mt-1">สติกเกอร์คู่ซ้าย-ขวา 5.0×2.5 cm เว้นกลาง 1 mm</p>
+      </div>
+
+    </div>
+
+    <div id="action-btns" class="hidden mb-6">
+      <button onclick="window.print()"
+              class="bg-slate-900 text-white py-4 px-16 rounded-2xl font-black text-lg shadow-lg hover:bg-slate-800 hover:scale-[1.02] active:scale-[0.98] transition-all">
+        🖨️ สั่งพิมพ์ฉลากที่เลือก
+      </button>
+      <p class="text-xs text-slate-400 mt-2">* สามารถคลิกข้อความบนตัวอย่างฉลากด้านล่างเพื่อแก้ไขข้อความสดได้ก่อนพิมพ์จริงค่ะ</p>
+    </div>
+  </div>
+
+  <div id="bag-area"     class="print-area"></div>
+  <div id="product-area" class="print-area"></div>
+  <div id="syringe-area" class="print-area"></div>
+
+
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxenXJCDvsONEcMl3c3_j6xnrXUf1NSfaI6Kkx-oKF5yxiHSiHt-6E6m8nF5BNQariP/exec";
+
+    if (!sessionStorage.getItem('rxUser')) {
+      alert("⚠️ กรุณาเข้าสู่ระบบในหน้าแรกก่อนนะคะ");
+      window.location.href = "index.html";
+    }
+
+    let rxData = {};
+
+    const AUTO_CALC_RULES = {
+      "6-mercaptopurine": { prepVolumeFixed: 50, prepCountDivisor: 5 },
+      "sirolimus":        { prepVolumeFixed: 20, prepCountDivisor: 1 }
+    };
+
+    const GENERIC_NAME_SUFFIX_MAP = {
+      "6-mercaptopurine": "Suspension",
+      "sirolimus":        "Suspension",
+      "valganciclovir":   "Suspension",
+      "temozolomide":     "Suspension",
+      "diazoxide":        "Suspension",
+      "insulin":          "Eye Drops",
+      "0.02% atropine":   "Eye Drops",
+      "0.2% linezolid":   "Eye Drops",
+      "azithromycin":     "Eye Drops",
+      "1% voriconazole":  "Eye Drops",
+      "0.05% voriconazole": "Injection",
+    };
+
+    function getForcedSuffixByGenericName(genericName) {
+      const key = genericName ? genericName.toString().trim().toLowerCase() : "";
+      return GENERIC_NAME_SUFFIX_MAP[key] || "";
+    }
+
+    function getEngOutputType(thaiText, fallbackProdName) {
+      const combined = ((thaiText || "") + " " + (fallbackProdName || ""));
+      if (combined.includes("ยาน้ำแขวนตะกอน") || combined.includes("Suspension")) return "Suspension";
+      if (combined.includes("ยาน้ำเชื่อม")     || combined.includes("Syrup"))      return "Syrup";
+      if (combined.includes("สารละลาย")         || combined.includes("Solution"))   return "Solution";
+      if (combined.includes("แคปซูล")           || combined.includes("Capsule"))    return "Repackaged Capsule";
+      if (combined.includes("ครีม")             || combined.includes("เจล"))        return "Cream/Gel";
+      if (combined.includes("ยาหยอดตา")         || combined.includes("Eye Drops"))  return "Eye Drops";
+      if (combined.includes("ยาหยอดหู")         || combined.includes("Ear Drops"))  return "Ear Drops";
+      if (combined.includes("ยาฉีด")            || combined.includes("Injection"))  return "Injection";
+      return "";
+    }
+
+    function getDosageFormSuffix(o) {
+      const forced = getForcedSuffixByGenericName(o.genericName);
+      if (forced) return forced;
+      return getEngOutputType(o.outputType, o.productName || o.genericName);
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+
+      if (urlParams.get('fromDashboard') === 'true') {
+        const lotNumber = urlParams.get('lotNumber');
+        document.getElementById('topPatientInfo').innerText = `กำลังดึงข้อมูลประวัติยาของ LOT: ${lotNumber}...`;
+        try {
+          const response = await fetch(`${SCRIPT_URL}?action=getOrderByLot&lotNumber=${lotNumber}`);
+          rxData = await response.json();
+          if (!rxData || !rxData.hn) {
+            document.getElementById('topPatientInfo').innerText = "❌ ไม่พบข้อมูลประวัติยาของ LOT นี้ในฐานข้อมูล";
+            return;
+          }
+          rxData.expiryDays = parseInt(rxData.expiryDays) || 7;
+          rxData.prepCount  = parseInt(rxData.prepCount)  || 1;
+          document.getElementById('topPatientInfo').innerHTML =
+            `HN: ${rxData.hn} - ${rxData.patientName} (Ward: ${rxData.ward || '-'})
+             <span class="text-purple-700 font-bold ml-1">[LOT: ${rxData.lotNumber}] [ประวัติเก่าทางคลัง]</span>`;
+          renderLabels();
+        } catch (err) {
+          document.getElementById('topPatientInfo').innerText = "❌ การเชื่อมต่อล้มเหลว ไม่สามารถเรียกข้อมูลได้";
+          alert("เกิดข้อผิดพลาดในการดึงข้อมูล: " + err.message);
+        }
+
+      } else if (urlParams.has('hn')) {
+        rxData = {
+          orderDate:     urlParams.get('orderDate')     || '',
+          lotNumber:     urlParams.get('lotNumber')     || 'ET------',
+          hn:            urlParams.get('hn')            || '',
+          patientName:   urlParams.get('patientName')   || '',
+          patientAge:    urlParams.get('patientAge')    || '',
+          patientWeight: urlParams.get('patientWeight') || '',
+          ward:          urlParams.get('ward')          || '',
+          patientNote:   urlParams.get('patientNote')   || '',
+          productId:     urlParams.get('productId')     || '',
+          productName:   urlParams.get('productName')   || '',
+          genericName:   urlParams.get('genericName')   || '',
+          brandName:     urlParams.get('brandName')     || '',
+          strength:      urlParams.get('strength')      || '',
+          unit:          urlParams.get('unit')          || 'ml',
+          outputType:    urlParams.get('outputType')    || '',
+          dosageForm:    urlParams.get('dosageForm')    || '',
+          expiryDays:    parseInt(urlParams.get('expiryDays')) || 7,
+          rawAmount:     urlParams.get('rawAmount')     || '',
+          prepVolume:    urlParams.get('prepVolume')    || '',
+          prepCount:     parseInt(urlParams.get('prepCount')) || 1,
+          dosePerTime:   urlParams.get('dosePerTime')   || '',
+          timesPerDay:   urlParams.get('timesPerDay')   || '',
+          timingText:    urlParams.get('timingText')    || '',
+          sigText:       urlParams.get('sigText')       || '',
+          labelWarning:  urlParams.get('labelWarning')  || '',
+          recordedBy:    urlParams.get('recordedBy')    || ''
+        };
+        document.getElementById('topPatientInfo').innerText =
+          `HN: ${rxData.hn} - ${rxData.patientName} (Ward: ${rxData.ward || '-'})`;
+        renderLabels();
+
+      } else {
+        document.getElementById('topPatientInfo').innerText = "❌ ไม่พบข้อมูล กรุณากลับไปทำรายการใหม่ค่ะ";
+      }
+    });
+
+    function selectSection(type) {
+      document.querySelectorAll('.print-area').forEach(el => el.classList.remove('active'));
+      document.getElementById(`${type}-area`).classList.add('active');
+
+      document.querySelectorAll('[id^="card-"]').forEach(el => {
+        el.classList.remove('border-indigo-500','border-purple-500','border-amber-500','shadow-md');
+        el.classList.add('border-slate-200');
+      });
+
+      const card = document.getElementById(`card-${type}`);
+      if (type === 'bag')     card.classList.add('border-indigo-500', 'shadow-md');
+      if (type === 'product') card.classList.add('border-purple-500', 'shadow-md');
+      if (type === 'syringe') card.classList.add('border-amber-500',  'shadow-md');
+
+      document.getElementById('action-btns').classList.remove('hidden');
+
+      if (type === 'bag') {
+        setTimeout(() => renderBagBarcodes(), 150);
+      }
+    }
+
+    function formatThaiDate(dateStr) {
+      if (!dateStr) return "-";
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      const months = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+      return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
+    }
+
+    function calculateExpiryDate(dateStr, days) {
+      if (!dateStr) return "-";
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return "-";
+      d.setDate(d.getDate() + days);
+      return formatThaiDate(d);
+    }
+
+    function cleanStorageText(storageStr) {
+      if (!storageStr) return "เก็บยาในตู้เย็น (2-8°C)";
+      const str = storageStr.toString().toLowerCase();
+      if (str.includes("ตู้เย็น") || str.includes("2-8"))      return "เก็บยาในตู้เย็น (2-8°C)";
+      else if (str.includes("ห้อง") || str.includes("room"))   return "เก็บยาที่อุณหภูมิห้อง";
+      else if (str.includes("แข็ง") || str.includes("freeze")) return "เก็บยาในช่องแช่แข็ง";
+      else if (str.includes("แสง") || str.includes("light"))   return "เก็บยาในถุงสีชาป้องกันแสง";
+      return storageStr;
+    }
+
+    function renderLabels() {
+      document.getElementById('bag-area').innerHTML     = createBagLabelHTML(rxData, rxData.prepCount);
+      document.getElementById('product-area').innerHTML = createProductLabelHTML(rxData);
+      document.getElementById('syringe-area').innerHTML = createSyringeLabelHTML(rxData);
+    }
+
+    // 🛍️ 1. ฉลากใหญ่ติดถุงยา — 2 ฉลาก
+    function createBagLabelHTML(o, total) {
+      const pUnit       = o.productUnit || 'ml';
+      const packUnit    = o.packageUnit || 'ขวด';
+      const formText    = getDosageFormSuffix(o);
+      const dForm       = formText ? ` ${formText}` : '';
+      const warningText = o.labelWarning ? o.labelWarning.replace(/\n/g, ' ') : '';
+      const lotNumber   = o.lotNumber || 'ET------';
+
+      /* ── ฉลากที่ 1: ปกติ ── */
+      const label1 = `
+        <div class="label-box label-standard label-box-thermal text-sm font-black" contenteditable="true">
+          <div class="flex flex-col items-center justify-start text-center" style="line-height: 1.3; padding-top: 1px; margin-bottom: 2px;">
+            <div class="text-[20px] text-thermal-heavy tracking-tight mb-0.5">${o.genericName}${dForm}</div>
+            <div class="text-[15px] text-thermal-heavy mb-0.5">
+              (${o.strength}) ${o.prepVolume} ${pUnit}
+              จำนวน <span class="underline border-b border-black font-black">${total} ${packUnit}</span>
+            </div>
+          </div>
+          <div class="flex flex-col items-center justify-start text-center" style="line-height: 1.3; margin-top: -0.5mm; margin-bottom: 2px;">
+            <div class="text-[18.5px] text-thermal-heavy">HN: ${o.hn}</div>
+            <div class="text-[18.5px] text-thermal-heavy truncate max-w-full" style="padding: 1px 0;">${o.patientName}</div>
+          </div>
+          <div class="text-center text-[15px] text-thermal-heavy py-0.5 px-0.5 rounded" style="line-height: 1.35; margin-bottom: 3px;">
+            <div style="padding-bottom: 1px;">${o.dosePerTime ? `รับประทานครั้งละ ${o.dosePerTime} ซีซี` : ''}</div>
+            <div class="mt-0.5" style="padding-top: 1px;">${o.timesPerDay ? `วันละ ${o.timesPerDay} ครั้ง` : ''} ${o.timingText || ''}</div>
+          </div>
+          <div class="grid grid-cols-2 text-[12px] pt-1 border-t border-black" style="line-height: 1.3; margin-top: -0.5mm;">
+            <div style="padding-bottom: 1px;">วันที่เตรียม: ${formatThaiDate(o.orderDate)}</div>
+            <div class="text-right" style="padding-bottom: 1px;">วันหมดอายุ: ${calculateExpiryDate(o.orderDate, o.expiryDays)}</div>
+            <div class="col-span-2 flex justify-between w-full" style="padding-top: 1px; margin-top: -0.3mm;">
+              <span>${cleanStorageText(o.storage)}</span>
+              <span class="text-right font-black">${warningText}</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      /* ── ฉลากที่ 2: สำหรับเช็คฉลาก ── */
+      /* ปรับเพิ่ม padding-top เป็น calc(1.3cm - 1.2mm) เพื่อขยับเนื้อหาลงมา 0.3mm บาลานซ์กับฉลากแรก */
+      const label2 = `
+        <div class="label-check label-box-thermal" style="position:relative; padding: calc(1.3cm - 1.2mm) 0.1in calc(4mm + 1.5mm) 0.1in;" contenteditable="true">
+
+          <div class="check-left" style="display:flex; flex-direction:column; justify-content:space-between; height:100%;">
+
+            <div>
+              <div class="check-label-header"
+                   style="font-size:10px!important;font-weight:900!important;
+                          text-align:center;border-bottom:1.5px solid #000;
+                          padding-bottom:1px;margin-bottom:3px;
+                          letter-spacing:0.5px;color:#000!important;">
+                ◈ สำหรับเช็คฉลาก ◈
+              </div>
+
+              <div style="text-align:center; line-height:1.3; margin-bottom:2px;">
+                <div style="font-size:16px!important; font-weight:900!important; color:#000!important; tracking-tight: -0.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${o.genericName}${dForm}</div>
+                <div style="font-size:11.5px!important; font-weight:900!important; color:#000!important; padding-top:1px;">
+                  (${o.strength}) ${o.prepVolume} ${pUnit} จำนวน <span style="text-decoration:underline;">${total} ${packUnit}</span>
+                </div>
+              </div>
+
+              <div style="text-align:center; line-height:1.3; margin-top:-0.5mm; margin-bottom:2px;">
+                <div style="font-size:15px!important; font-weight:900!important; color:#000!important;">HN: ${o.hn}</div>
+                <div style="font-size:15px!important; font-weight:900!important; color:#000!important; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding: 1px 0;">${o.patientName}</div>
+              </div>
+
+              <div style="text-align:center; font-size:12px!important; font-weight:900!important; color:#000!important; line-height:1.35; padding:1px 0; margin-bottom: 2px;">
+                <div style="padding-bottom:1px;">${o.dosePerTime ? `รับประทานครั้งละ ${o.dosePerTime} ซีซี` : ''}</div>
+                <div style="padding-top:1px;">${o.timesPerDay ? `วันละ ${o.timesPerDay} ครั้ง` : ''} ${o.timingText || ''}</div>
+              </div>
+            </div>
+
+            <div style="font-size:9.5px!important; font-weight:800!important; color:#000!important; border-top:1px solid #000; padding-top:2px; line-height:1.3; margin-top:-0.5mm;">
+              <div style="display:flex; justify-content:space-between; padding-bottom:1px;">
+                <span>วันที่เตรียม: ${formatThaiDate(o.orderDate)}</span>
+                <span>วันหมดอายุ: ${calculateExpiryDate(o.orderDate, o.expiryDays)}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-weight:900!important; padding-top:1px; margin-top:-0.3mm;">
+                <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:60%;">${cleanStorageText(o.storage)}</span>
+                <span style="text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${warningText}</span>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="check-right" style="position:relative; width:0.8in; min-width:0.8in; padding-right:0px;">
+            <div class="barcode-rotate-wrap" style="width: 1.8in; height: 0.75in;">
+              <svg id="svg-check-barcode" data-lot="${lotNumber}" style="display:block;"></svg>
+              <div class="barcode-lot-rotated" style="font-size:7px!important;font-weight:900!important;color:#000!important;text-align:center;margin-top:1px;white-space:nowrap;">
+                LOT: ${lotNumber}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      `;
+
+      return `<div class="bag-label-pair">${label1}${label2}</div>`;
+    }
+
+    function renderBagBarcodes() {
+      const svgList = document.querySelectorAll('#bag-area svg[data-lot]');
+      svgList.forEach(svgEl => {
+        const lot      = svgEl.getAttribute('data-lot') || 'ET------';
+        const cleanLot = lot.replace(/[^\x00-\x7F]/g, '');
+        try {
+          JsBarcode(svgEl, cleanLot, {
+            format:       "CODE128",
+            width:        1.1,
+            height:       28,         
+            displayValue: false,
+            margin:       1,
+            background:   "#ffffff",
+            lineColor:    "#000000"
+          });
+          svgEl.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+          svgEl.style.width   = '100%';
+          svgEl.style.height  = 'auto';
+          svgEl.style.display = 'block';
+        } catch (err) {
+          console.warn('JsBarcode error:', err, 'LOT:', cleanLot);
+          svgEl.outerHTML = `<div style="font-size:7px;font-weight:900;text-align:center;border:1px solid #000;padding:2px;color:#000;">[Barcode: ${lot}]</div>`;
+        }
+      });
+    }
+
+    // 🍾 2. ฉลากติดขวดยา / ซองยา
+    function createProductLabelHTML(o) {
+      const pUnit       = o.productUnit || 'ml';
+      const formText    = getDosageFormSuffix(o);
+      const dForm       = formText ? ` ${formText}` : '';
+      const warningText = o.labelWarning ? o.labelWarning.replace(/\n/g, ' ') : '';
+
+      return `
+        <div class="label-box label-standard label-box-thermal text-sm font-black" contenteditable="true">
+          <div class="flex flex-col items-center justify-start text-center" style="line-height: 1.3; padding-top: 1px; margin-bottom: 2px;">
+            <div class="text-[20px] text-thermal-heavy tracking-tight mb-0.5">${o.genericName}${dForm}</div>
+            <div class="text-[15px] text-thermal-heavy mb-0.5">(${o.strength}) ${o.prepVolume} ${pUnit}</div>
+          </div>
+          <div class="flex flex-col items-center justify-start text-center" style="line-height: 1.3; margin-top: -0.5mm; margin-bottom: 2px;">
+            <div class="text-[18.5px] text-thermal-heavy">HN: ${o.hn}</div>
+            <div class="text-[18.5px] text-thermal-heavy truncate max-w-full" style="padding: 1px 0;">${o.patientName}</div>
+          </div>
+          <div class="text-center text-[15px] text-thermal-heavy py-0.5 px-0.5 rounded" style="line-height: 1.35; margin-bottom: 3px;">
+            <div style="padding-bottom: 1px;">${o.dosePerTime ? `รับประทานครั้งละ ${o.dosePerTime} ซีซี` : ''}</div>
+            <div class="mt-0.5" style="padding-top: 1px;">${o.timesPerDay ? `วันละ ${o.timesPerDay} ครั้ง` : ''} ${o.timingText || ''}</div>
+          </div>
+          <div class="grid grid-cols-2 text-[12px] pt-1 border-t border-black" style="line-height: 1.3; margin-top: -0.5mm;">
+            <div style="padding-bottom: 1px;">วันที่เตรียม: ${formatThaiDate(o.orderDate)}</div>
+            <div class="text-right" style="padding-bottom: 1px;">วันหมดอายุ: ${calculateExpiryDate(o.orderDate, o.expiryDays)}</div>
+            <div class="col-span-2 flex justify-between w-full" style="padding-top: 1px; margin-top: -0.3mm;">
+              <span>${cleanStorageText(o.storage)}</span>
+              <span class="text-right font-black">${warningText}</span>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 💉 3. ฉลากเล็กติด Syringe แบบคู่ซ้าย-ขวา
+    function createSyringeLabelHTML(o) {
+      const labelContent = `
+        <div class="border-b border-black pb-0.5 text-thermal-heavy text-[12px]" style="line-height: 1.3;">HN: ${o.hn}</div>
+        <div class="truncate text-thermal-heavy text-[12px] py-0.5" style="line-height: 1.3; padding: 1px 0;">${o.patientName}</div>
+        <div class="my-0.5" style="line-height: 1.3;">
+          <p class="text-[11.5px] text-thermal-heavy truncate mb-0.5">${o.genericName}</p>
+          <p class="text-[10.5px] text-thermal-heavy">
+            Dose: <span class="underline border-b border-black">${o.dosePerTime || '-'} ซีซี</span> (${o.timingText || 'ตามสั่ง'})
+          </p>
+        </div>
+        <div class="border-t border-black pt-0.5 text-[10px] text-thermal-heavy" style="line-height: 1.3;">
+          Exp: ${calculateExpiryDate(o.orderDate, o.expiryDays)}
+        </div>
+      `;
+      return `
+        <div class="label-box label-syringe label-box-thermal" contenteditable="true">
+          <div class="syringe-die-cut">${labelContent}</div>
+          <div class="syringe-die-cut">${labelContent}</div>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
