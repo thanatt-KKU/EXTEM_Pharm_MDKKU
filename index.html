@@ -568,9 +568,9 @@
       ]
     };
 
-    // =========================================
-    // 🔐 LOGIN
-    // =========================================
+  // =========================================================================
+    // 🔐 LOGIN & SYSTEM PORTAL CONTROL (วางทับช่วงนี้ทั้งหมดได้เลยค่ะ)
+    // =========================================================================
     async function handleLogin(e) {
       if (e) e.preventDefault();
       const u = document.getElementById('username').value.trim();
@@ -581,12 +581,15 @@
       btn.disabled = true;
       btn.innerHTML = `<span class="spinner"></span> กำลังตรวจสอบ...`;
       err.classList.add('hidden');
+      
       if (u === "admin" && p === "1234") {
         sessionStorage.setItem('rxUser','Admin');
         sessionStorage.setItem('rxDemoMode','true');
-        // 🔄 เปลี่ยนเข้าหน้าเมนูคัดแยกก่อนเสมอหลัง Login สำเร็จ
-        location.href = 'menu.html'; return;
+        // 🟢 แก้ไขตรงนี้: ให้กระโดดไปหน้าเมนูหลัก ไม่เปิดคาที่หน้านี้
+        location.href = 'menu.html'; 
+        return;
       }
+      
       try {
         const fd = new URLSearchParams();
         fd.append("action","login"); fd.append("username",u); fd.append("password",p);
@@ -595,7 +598,7 @@
         if (result.success) {
           sessionStorage.setItem('rxUser', result.name);
           sessionStorage.setItem('rxDemoMode','false');
-          // 🔄 วิ่งไปหน้าเลือกงานหลัก
+          // 🟢 แก้ไขตรงนี้เช่นกันค่ะ: วิ่งไปตั้งหลักที่บอร์ดคัดแยกเมนูก่อน
           location.href = 'menu.html';
         } else {
           err.textContent = "❌ รหัสผิดพลาด กรุณาตรวจสอบอีกครั้งค่ะ";
@@ -611,7 +614,7 @@
       }
     }
 
-   function showMainApp() {
+    function showMainApp() {
       document.getElementById('loginPage').classList.add('hidden');
       document.getElementById('mainApp').classList.remove('hidden');
       const isDemo = sessionStorage.getItem('rxDemoMode') === 'true';
@@ -630,13 +633,13 @@
     }
 
     window.onload = () => { 
-      // 1. เช็กว่าเข้าสู่ระบบหรือยัง
+      // ตรวจสอบสถานะการเข้าสู่ระบบปัจจุบัน
       if (sessionStorage.getItem('rxUser')) { 
-        // 2. ถ้าล็อกอินแล้วแต่ URL ไม่มีกลุ่มยา (?group=) ให้เด้งไปหน้าเมนูหลักก่อนเสมอ
+        // ถ้าล็อกอินแล้วแต่เปิดเว็บมาทื่อๆ ไม่มีกลุ่มงานยา ให้เด้งส่งตัวไปที่หน้ากระดานเมนูทันที
         if (!window.location.search.includes('group=')) {
           location.href = 'menu.html';
         } else {
-          // 3. ถ้าเลือกกลุ่มยามาจากหน้าเมนูแล้ว ให้เปิดหน้าฟอร์มกรอกข้อมูลตามปกติ
+          // มี group คาอยู่บนลิงก์แล้ว (เช่น คลิกมาจากเมนู) ให้เปิดฟอร์มกลุ่มย่อยนั้นทำงานได้เลย
           showMainApp(); 
         }
       } 
