@@ -611,7 +611,7 @@
       }
     }
 
-    function showMainApp() {
+   function showMainApp() {
       document.getElementById('loginPage').classList.add('hidden');
       document.getElementById('mainApp').classList.remove('hidden');
       const isDemo = sessionStorage.getItem('rxDemoMode') === 'true';
@@ -624,10 +624,23 @@
       generateLotNumber();
     }
 
-    function logout() { sessionStorage.clear(); location.href = 'index.html'; }
-    window.onload = () => { if (sessionStorage.getItem('rxUser')) showMainApp(); };
+    function logout() { 
+      sessionStorage.clear(); 
+      location.href = 'index.html'; 
+    }
 
-
+    window.onload = () => { 
+      // 1. เช็กว่าเข้าสู่ระบบหรือยัง
+      if (sessionStorage.getItem('rxUser')) { 
+        // 2. ถ้าล็อกอินแล้วแต่ URL ไม่มีกลุ่มยา (?group=) ให้เด้งไปหน้าเมนูหลักก่อนเสมอ
+        if (!window.location.search.includes('group=')) {
+          location.href = 'menu.html';
+        } else {
+          // 3. ถ้าเลือกกลุ่มยามาจากหน้าเมนูแล้ว ให้เปิดหน้าฟอร์มกรอกข้อมูลตามปกติ
+          showMainApp(); 
+        }
+      } 
+    };
     // =========================================
     // 🎨 SETUP DYNAMIC WORKFLOW LAYOUT
     // =========================================
