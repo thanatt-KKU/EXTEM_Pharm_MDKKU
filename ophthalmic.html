@@ -1,0 +1,764 @@
+<!doctype html>
+<html lang="th" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบฟอร์มผลิตยาตาเฉพาะราย | Srinagarind Hospital</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Sarabun', sans-serif;
+      background: linear-gradient(135deg, #162535 0%, #1e354a 50%, #3a5c76 100%);
+      min-height: 100vh;
+    }
+    .gradient-header { background: linear-gradient(135deg, #1b2d3c 0%, #2c4a63 50%, #467092 100%); }
+    .card-shadow { box-shadow: 0 10px 30px -5px rgba(22,37,53,0.3); }
+    .section-title {
+      border-left: 5px solid #467092; padding-left: 12px;
+      font-weight: 800; color: #1b2d3c; font-size: 1.1rem;
+    }
+    .ward-dropdown { max-height: 250px; overflow-y: auto; z-index: 100; }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .input-field {
+      width: 100%; padding: 10px 14px;
+      border: 2px solid #b7d1e2; border-radius: 12px;
+      outline: none; transition: all 0.2s;
+      background: #f4f8fb; color: #1b2d3c;
+      font-family: 'Sarabun', sans-serif; font-weight: 600;
+    }
+    .input-field:focus { border-color: #467092; background: white; box-shadow: 0 0 0 3px rgba(70,112,146,0.15); }
+    .input-field::placeholder { color: #9abacf; font-weight: 400; }
+    .field-label {
+      display: block; font-size: 0.8rem; font-weight: 700; color: #2c4a63;
+      margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .select-field {
+      width: 100%; padding: 10px 14px;
+      border: 2px solid #b7d1e2; border-radius: 12px;
+      outline: none; background: #f4f8fb; color: #1b2d3c;
+      font-family: 'Sarabun', sans-serif; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .select-field:focus { border-color: #467092; box-shadow: 0 0 0 3px rgba(70,112,146,0.15); }
+    
+    .freq-radio:checked + label {
+      background: linear-gradient(135deg, #2c4a63, #467092) !important;
+      color: white !important;
+      border-color: #2c4a63 !important;
+      transform: scale(1.02);
+      box-shadow: 0 4px 12px rgba(44,74,99,0.3);
+    }
+    .highlight-box {
+      background: linear-gradient(135deg, #1b2d3c, #2c4a63);
+      border-radius: 24px; padding: 32px; color: white;
+    }
+    .nav-btn {
+      font-size: 0.7rem; font-weight: 800; padding: 6px 14px;
+      border-radius: 10px; border: 2px solid; background: white;
+      cursor: pointer; transition: all 0.2s; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .hidden { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      display: inline-block; width: 16px; height: 16px;
+      border: 3px solid rgba(255,255,255,0.3); border-top-color: white;
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      vertical-align: middle; margin-right: 6px;
+    }
+    
+    .lot-display {
+      background: linear-gradient(135deg, #0d151d, #1b2d3c);
+      border: 2px solid #2c4a63; border-radius: 20px;
+      padding: 24px; text-align: center; position: relative; overflow: hidden;
+    }
+    .lot-number-text {
+      font-family: 'Courier New', monospace; font-size: 2.5rem;
+      font-weight: 900; letter-spacing: 0.15em;
+      background: linear-gradient(135deg, #9abacf, #b7d1e2, #467092);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    @keyframes lotPulse { 0%,100% { opacity:1; } 50% { opacity:0.6; } }
+    .lot-loading { animation: lotPulse 1.2s ease-in-out infinite; color: #467092; }
+    .lot-pill {
+      display: inline-flex; flex-direction: column; align-items: center;
+      padding: 8px 16px; border-radius: 12px;
+      background: rgba(70,112,146,0.15); border: 1px solid rgba(70,112,146,0.3);
+    }
+
+    /* สไตล์เฉพาะสำหรับ Worksheet ตอนสั่งพริ้นต์ */
+    @media print {
+      body { background: white !important; color: black !important; padding: 0 !important; }
+      .no-print { display: none !important; }
+      .print-only-worksheet { display: block !important; position: absolute; top: 0; left: 0; width: 100%; }
+      .main-form-content { display: none !important; }
+    }
+  </style>
+</head>
+<body class="p-4 md:p-8">
+
+  <!-- MAIN APP CONTAINER -->
+  <div id="mainApp" class="max-w-4xl mx-auto main-form-content">
+
+    <!-- Top Bar -->
+    <div class="flex flex-wrap items-center gap-2 mb-4 no-print">
+      <span class="text-xs font-bold text-slate-300 uppercase tracking-tight">ผู้บันทึกห้อง Sterile:</span>
+      <span id="displayUserName" class="text-sm font-black px-3 py-1 bg-white rounded-xl shadow-sm" style="color:#2c4a63;">-</span>
+      <span id="demoBadge" class="hidden inline-block bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full ml-1">Demo Mode</span>
+      <div class="flex gap-2 ml-auto flex-wrap">
+        <a href="menu.html" class="nav-btn" style="color:#2c4a63; border-color:#9abacf;">🏠 เมนูหลัก Portal</a>
+        <a href="dashboard.html" class="nav-btn" style="color:#2c4a63; border-color:#9abacf;">📊 Dashboard</a>
+        <button onclick="logout()" class="text-[10px] font-black text-red-400 hover:text-red-600 uppercase underline ml-1">Logout</button>
+      </div>
+    </div>
+
+    <div class="space-y-6">
+
+      <!-- HEADER -->
+      <header class="gradient-header p-8 rounded-3xl shadow-xl no-print">
+        <div class="flex justify-between items-center text-white">
+          <div>
+            <h1 class="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
+              <span>👁️</span> ระบบฟอร์มใบผลิต: <span class="text-cyan-200">ยาตาเฉพาะราย (Ophthalmic)</span>
+            </h1>
+            <p class="text-base font-medium opacity-80 mt-1">Sterile Room Extemporaneous Unit · Srinagarind Hospital</p>
+          </div>
+          <button onclick="location.reload()" class="text-xs bg-white/20 px-3 py-2 rounded-xl hover:bg-white/30 text-white border border-white/20 font-bold">
+            🔄 เริ่มใหม่
+          </button>
+        </div>
+      </header>
+
+
+      <!-- BLOCK 1: 📋 ข้อมูลทั่วไปคนไข้ -->
+      <section class="bg-white p-6 rounded-2xl card-shadow space-y-4">
+        <h2 class="section-title">📋 ข้อมูลทั่วไปคนไข้</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div>
+            <label class="field-label">วันที่ Order</label>
+            <input type="date" id="orderDate" class="input-field" onchange="onDateChange()">
+          </div>
+          <div>
+            <label class="field-label">HN</label>
+            <input type="text" id="hn" placeholder="ระบุ HN คนไข้" class="input-field" onblur="fetchPatientData()">
+            <p id="hn-status" class="text-[10px] font-bold mt-1 ml-1 h-3"></p>
+          </div>
+          <div>
+            <label class="field-label">ชื่อ-นามสกุล</label>
+            <input type="text" id="patientName" placeholder="ดึงข้อมูลอัตโนมัติ/คีย์สด" class="input-field">
+          </div>
+          <div class="relative">
+            <label class="field-label">Ward</label>
+            <input type="text" id="wardInput" placeholder="ค้นหาหอผู้ป่วย..."
+              class="input-field" onfocus="showWards()" oninput="filterWards()" autocomplete="off">
+            <div id="wardList" class="hidden absolute left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-2xl ward-dropdown" style="z-index:100;"></div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t border-slate-100">
+          <div>
+            <label class="field-label">น้ำหนัก (เด็ก/ผู้ใหญ่)</label>
+            <div class="relative">
+              <input type="number" id="patientWeight" step="0.1" placeholder="0.0" class="input-field" style="padding-right:40px;">
+              <span class="absolute right-3 top-2.5 text-xs font-black" style="color:#9abacf;">kg</span>
+            </div>
+          </div>
+          <div class="col-span-2 md:col-span-3">
+            <label class="field-label">📅 วันนัดถัดไป <span class="normal-case font-normal text-[10px] ml-1" style="color:#9abacf;">(Next Appointment)</span></label>
+            <div class="flex items-center gap-3 bg-slate-50 border border-slate-200 rounded-xl p-2">
+              <span class="text-lg ml-1">📅</span>
+              <input type="date" id="nextAppointment" class="input-field"
+                style="background:transparent; border-color:transparent; padding:4px 8px; flex:1;"
+                onchange="onNextApptChange()">
+              <span id="nextApptDisplay" class="text-xs font-black whitespace-nowrap" style="color:#2c4a63;"></span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- BLOCK 2: 📦 เลือกรายการยาที่จะผลิต -->
+      <section class="bg-white p-6 rounded-2xl card-shadow space-y-4 border-t-8" style="border-color:#467092;">
+        <h2 class="section-title">📦 รายละเอียดผลิตภัณฑ์วัตถุดิบ</h2>
+        <div>
+          <label class="field-label">รายการยาตาในคลังสารละลาย</label>
+          <select id="productSelect" class="select-field text-base font-black" onchange="onProductChange()">
+            <option value="">-- กรุณาเลือกรายการยาตาเพื่อจัดทำใบงาน --</option>
+          </select>
+          <p id="product-loading" class="text-xs font-bold mt-1 ml-1" style="color:#467092;">⏳ กำลังโหลด Master Data ยาตา...</p>
+        </div>
+
+        <!-- Product Master Data Card -->
+        <div id="productInfoCard" class="hidden rounded-2xl p-4 border-2" style="background:#f4f8fb; border-color:#b7d1e2;">
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3 text-center">
+            <div class="p-3 bg-white rounded-xl border border-slate-200">
+              <div class="text-[10px] font-black uppercase text-slate-400">ชื่อสามัญทางยา</div>
+              <div id="info-generic" class="text-sm font-black mt-1 text-slate-800">-</div>
+            </div>
+            <div class="p-3 bg-white rounded-xl border border-slate-200">
+              <div class="text-[10px] font-black uppercase text-slate-400">ยี่ห้อ/ผู้ผลิต</div>
+              <div id="info-brand" class="text-sm font-black mt-1 text-slate-700">-</div>
+            </div>
+            <div class="p-3 bg-white rounded-xl border border-slate-200">
+              <div class="text-[10px] font-black uppercase text-slate-400">ความแรงมาตรฐาน</div>
+              <div id="info-strength" class="text-sm font-black mt-1 text-slate-700">-</div>
+            </div>
+            <div class="p-3 bg-white rounded-xl border border-slate-200">
+              <div class="text-[10px] font-black uppercase text-slate-400">อายุยาปราศจากเชื้อ</div>
+              <div class="text-sm font-black mt-1 text-red-600"><span id="info-expiry-days">-</span> วัน</div>
+            </div>
+            <div class="p-3 bg-white rounded-xl border border-slate-200">
+              <div class="text-[10px] font-black uppercase text-slate-400">อุณหภูมิเก็บรักษา</div>
+              <div id="info-storage" class="text-sm font-black mt-1 text-slate-700">-</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- NEW BLOCK 3: 🧪 ช่วยคำนวณ / ทำ Worksheet (หน้าต่างคำนวณแยกอิสระ) -->
+      <section class="bg-amber-50/40 p-6 rounded-2xl card-shadow border-2 border-dashed border-amber-300 space-y-4">
+        <div class="flex justify-between items-center">
+          <h2 class="text-base font-black text-amber-900 flex items-center gap-2">
+            <span>🧮</span> ระบบช่วยคำนวณปริมาณสาร & ใบ Worksheet ผสมยาตา
+          </h2>
+          <button onclick="printWorksheet()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-md">
+            🖨️ พิมพ์เฉพาะใบ Worksheet ผสมยา
+          </button>
+        </div>
+        <p class="text-xs text-amber-700 font-bold">* ส่วนนี้ใช้สำหรับช่วยคำนวณหน้าห้อง Cleanroom และพิมพ์เอกสารกำกับควบคุมการผลิต จะไม่ถูกบันทึกลง Google Sheets</p>
+        
+        <!-- โครงสร้าง Input สำหรับคำนวณสูตรผสมยาสลับซับซ้อน (คีย์สดปรับแต่งได้) -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-xl border border-amber-200">
+          <div>
+            <label class="field-label text-amber-800">ความเข้มข้นที่ต้องการ (Target Conc.)</label>
+            <input type="text" id="ws-target-conc" placeholder="เช่น 0.02% หรือ 50 mg/ml" class="input-field border-amber-200" oninput="syncWorksheetValues()">
+          </div>
+          <div>
+            <label class="field-label text-amber-800">ปริมาณยาหลักที่ต้องดูดมา (Active Vol.)</label>
+            <input type="text" id="ws-active-vol" placeholder="เช่น 2.4 ml" class="input-field border-amber-200" oninput="syncWorksheetValues()">
+          </div>
+          <div>
+            <label class="field-label text-amber-800">สารละลายเจือจางที่เติม (Diluent Vol.)</label>
+            <input type="text" id="ws-diluent" placeholder="เช่น NSS บรรจุให้ครบ 10 ml" class="input-field border-amber-200" oninput="syncWorksheetValues()">
+          </div>
+        </div>
+      </section>
+
+
+      <!-- BLOCK 4: 🧪 จำนวนปริมาณผลิตภัณฑ์สำเร็จ -->
+      <section class="bg-white p-6 rounded-2xl card-shadow space-y-5">
+        <h2 class="section-title">🧪 จำนวนปริมาณผลิตภัณฑ์สำเร็จที่ผลิตสำเร็จ</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label class="field-label">ปริมาตร/น้ำหนักรวม ที่บรรจุต่อชิ้น *</label>
+            <div class="flex items-center gap-3">
+              <input type="number" id="prepVolume" placeholder="0" step="1" class="input-field text-3xl font-black text-center" style="color:#2c4a63;" oninput="updateSummary()">
+              <!-- ปลดล็อกหน่วยบรรจุให้ผู้ใช้แก้ไขพิมพ์เองได้ตามใจชอบ -->
+              <input type="text" id="prepVolumeUnit" value="ml" class="input-field text-center font-bold text-lg" style="max-width:90px; border-color:#b7d1e2;" oninput="syncVolumeUnit()">
+            </div>
+          </div>
+          <div>
+            <label class="field-label">จำนวนภาชนะบรรจุสำเร็จที่จัดเตรียม</label>
+            <div class="flex items-center gap-3 p-3 rounded-xl border-2" style="background:#f4f8fb; border-color:#b7d1e2;">
+              <button onclick="changePrepCount(-1)" class="w-12 h-12 bg-white rounded-full shadow-md text-2xl font-black transition-all active:scale-90" style="color:#467092; border:2px solid #b7d1e2;">−</button>
+              <span id="prepCountDisplay" class="text-4xl font-black w-16 text-center" style="color:#1b2d3c;">1</span>
+              <button onclick="changePrepCount(1)" class="w-12 h-12 bg-white rounded-full shadow-md text-2xl font-black transition-all active:scale-90" style="color:#467092; border:2px solid #b7d1e2;">+</button>
+              <input type="hidden" id="prepCount" value="1">
+              <span class="font-black ml-2 text-lg text-slate-500">ขวด</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- BLOCK 5: 📝 วิธีสั่งใช้ยาและบริเวณบริหารยาตา -->
+      <section class="bg-white p-6 rounded-2xl card-shadow space-y-5">
+        <h2 class="section-title">📝 วิธีสั่งใช้ยาและบริเวณบริหารดวงตา</h2>
+
+        <!-- Eye Selector Component -->
+        <div class="bg-slate-50 p-4 border border-slate-200 rounded-2xl">
+          <label class="field-label text-slate-800">ระบุบริเวณดวงตาเป้าหมาย (Target Eye Side) *</label>
+          <div class="grid grid-cols-3 gap-3">
+            <input type="radio" name="eyeside" id="eye-left" value="ข้างซ้าย" class="hidden freq-radio" onchange="buildSigText()" checked>
+            <label for="eye-left" class="flex p-3 border border-slate-300 rounded-xl cursor-pointer font-bold justify-center bg-white text-slate-700">ข้างซ้าย (Left Eye)</label>
+            
+            <input type="radio" name="eyeside" id="eye-right" value="ข้างขวา" class="hidden freq-radio" onchange="buildSigText()">
+            <label for="eye-right" class="flex p-3 border border-slate-300 rounded-xl cursor-pointer font-bold justify-center bg-white text-slate-700">ข้างขวา (Right Eye)</label>
+
+            <input type="radio" name="eyeside" id="eye-both" value="ทั้งสองข้าง" class="hidden freq-radio" onchange="buildSigText()">
+            <label for="eye-both" class="flex p-3 border border-slate-300 rounded-xl cursor-pointer font-bold justify-center bg-white text-slate-700">ทั้งสองข้าง (OU / Both Eyes)</label>
+          </div>
+        </div>
+
+        <div>
+          <label class="field-label mb-3 block">เลือกความถี่ด่วนมาตรฐานยาตา (Preset Sig)</label>
+          <div id="dynamicFreqGrid" class="grid grid-cols-2 md:grid-cols-5 gap-3"></div>
+        </div>
+
+        <!-- Wording Structure Input: หยอดตา ___ ครั้งละ ___ หยด ___ -->
+        <div class="rounded-2xl p-5 border-2 space-y-4" style="background:#f4f8fb; border-color:#b7d1e2;">
+          <p class="text-xs font-black uppercase tracking-widest style="color:#467092;">📋 ตัวแปรแจงโครงสร้างคำสั่งใช้ยาตา</p>
+          
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="text-sm font-bold text-slate-700">หยอดตาข้างที่เลือก ครั้งละ</span>
+            <input type="number" id="dosePerTime" placeholder="0" step="1" class="input-field text-xl font-black text-center" style="max-width:100px; color:#2c4a63;" oninput="buildSigText()">
+            <span class="text-sm font-black text-slate-700">หยด</span>
+          </div>
+          
+          <div class="flex items-center gap-3 flex-wrap">
+            <span class="text-sm font-bold text-slate-700">วันละ</span>
+            <input type="number" id="timesPerDay" placeholder="0" min="1" max="12" class="input-field text-xl font-black text-center" style="max-width:80px; color:#2c4a63;" oninput="buildSigText()">
+            <span class="text-sm font-bold text-slate-700">ครั้ง</span>
+            <input type="text" id="timingText" placeholder="ความถี่ / ช่วงเวลาจัดให้หยด เช่น ทุก 2 ชั่วโมง, ก่อนนอน" class="input-field" style="flex:1; min-width:180px;" oninput="buildSigText()">
+          </div>
+          
+          <!-- Live Preview On Label Box -->
+          <div class="p-4 rounded-xl border-2 border-dashed border-slate-300 bg-white">
+            <p class="text-[10px] font-black text-slate-400 uppercase mb-2">👁️ ข้อความสรุปที่จะพริ้นท์ลงบนสติกเกอร์ฉลากยาตา:</p>
+            <p id="sigPreview" class="text-base font-black leading-relaxed text-slate-900">— กรุณาระบุข้อมูลวิธีใช้ยาให้ครบถ้วนเพื่อสร้าง wording —</p>
+          </div>
+        </div>
+
+        <div>
+          <label class="field-label">⚠️ คำเตือนความปลอดภัยพิเศษกะตัวยาตา</label>
+          <div id="autoWarningBox" class="auto-warning-box mb-3 hidden">
+            <span class="text-amber-600 font-bold">⚠️</span>
+            <div class="flex-1">
+              <div class="text-[10px] font-black text-amber-800 uppercase mb-1">ดึงข้อมูลอัตโนมัติจาก Master Data คลังยา</div>
+              <div id="autoWarningText" class="text-sm font-bold text-slate-800"></div>
+            </div>
+          </div>
+          <textarea id="labelWarning" rows="2" placeholder="เพิ่มเติมระบุคำเตือน เช่น 'ยาใช้เฉพาะดวงตา ห้ามรับประทาน', 'ป้องกันแสงอย่างเข้มงวด'" class="input-field resize-none" oninput="buildSigText()"></textarea>
+        </div>
+      </section>
+
+
+      <!-- BLOCK 6: 🏷️ LOT + Summary บันทึกผล -->
+      <section class="highlight-box shadow-2xl border-b-[12px]" style="border-color:#1b2d3c;">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
+          <div class="bg-white/10 p-4 rounded-2xl border border-white/20">
+            <div class="text-slate-300 text-xs font-black uppercase tracking-wider mb-2">ตัวยาที่เลือกผลิต</div>
+            <div id="sum-product" class="text-base font-black text-white leading-tight">— ยังไม่ได้เลือกรายการยา —</div>
+          </div>
+          <div class="bg-white/10 p-4 rounded-2xl border border-white/20">
+            <div class="text-slate-300 text-xs font-black uppercase tracking-wider mb-2">ปริมาตร & จำนวนขวดรวม</div>
+            <div class="text-3xl font-black text-white">
+              <span id="sum-volume">0</span> <span id="sum-vol-unit" class="text-lg text-slate-300">ml</span> × 
+              <span id="sum-count">1</span> <span class="text-lg text-slate-300">ขวด</span>
+            </div>
+          </div>
+          <div class="bg-white/10 p-4 rounded-2xl border border-white/20">
+            <div class="text-slate-300 text-xs font-black uppercase tracking-wider mb-2">Wording วิธีใช้รวม</div>
+            <div id="sum-sig" class="text-sm font-black text-white leading-snug">— ยังไม่ได้ระบุวิธีสั่งใช้ยา —</div>
+          </div>
+        </div>
+
+        <!-- LOT Number Engine Display -->
+        <div class="lot-display mb-6">
+          <p class="text-[10px] font-black uppercase tracking-[0.25em] mb-3 text-slate-400">🏷️ Ophthalmic Lot Number (Auto Generated)</p>
+          <div id="lotDisplay" class="lot-number-text mb-4">EY______</div>
+          <div class="flex justify-center gap-3 flex-wrap mt-2">
+            <div class="lot-pill"><span class="text-[10px] text-slate-400 font-black">Prefix</span><span id="lot-prefix-text" class="text-sm font-black text-white mt-1">EY</span></div>
+            <div class="lot-pill"><span class="text-[10px] text-slate-400 font-black">ปี พศ</span><span id="lot-year" class="text-sm font-black text-white mt-1">__</span></div>
+            <div class="lot-pill"><span class="text-[10px] text-slate-400 font-black">เดือน</span><span id="lot-month" class="text-sm font-black text-white mt-1">__</span></div>
+            <div class="lot-pill"><span class="text-[10px] text-slate-400 font-black">ลำดับ</span><span id="lot-seq" class="text-sm font-black text-white mt-1">___</span></div>
+          </div>
+          <p id="lot-status" class="text-xs font-bold mt-3" style="color:#467092;">⏳ ระบบกำลังขอคิวลำดับจากฐานข้อมูลกลาง...</p>
+          <input type="hidden" id="lotNumber" value="">
+        </div>
+
+        <button id="saveBtn" onclick="saveOrder()" class="w-full p-7 rounded-3xl text-2xl font-black shadow-xl transition-all active:scale-95 border-2 border-white/20" style="background: linear-gradient(135deg, #467092, #638fa9); color:white;">
+          💾 บันทึกข้อมูลและจัดพิมพ์ฉลากยาตา
+        </button>
+      </section>
+
+      <p class="text-center text-slate-400 text-[10px] py-6 uppercase font-black tracking-[0.2em]">
+        Srinagarind Hospital • Pharmacy Department • Ophthalmic Sterile Room
+      </p>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- 🖨️ PRINTABLE ONLY: โครงร่างหน้าใบ Worksheet ผสมยาตา (แสดงผลตอนสั่งพิมพ์ใบงานเท่านั้น) -->
+  <!-- ======================================================== -->
+  <div id="printWorksheetSection" class="hidden print-only-worksheet bg-white p-8 text-black text-xs space-y-6">
+    <div class="text-center border-b-2 border-black pb-4">
+      <h1 class="text-xl font-bold uppercase">Worksheet สำหรับเตรียมยาตาปราศจากเชื้อ (Sterile Eye Drop)</h1>
+      <p class="text-sm mt-1">โรงพยาบาลศรีนครินทร์ คณะแพทยศาสตร์ มหาวิทยาลัยขอนแก่น</p>
+    </div>
+
+    <!-- ข้อมูลคนไข้และเลขอ้างอิง -->
+    <div class="grid grid-cols-2 gap-4 border p-4 rounded-xl">
+      <div><strong>HN:</strong> <span id="ws-lbl-hn">-</span></div>
+      <div><strong>ชื่อ-นามสกุล คนไข้:</strong> <span id="ws-lbl-name">-</span></div>
+      <div><strong>Ward/หอผู้ป่วย:</strong> <span id="ws-lbl-ward">-</span></div>
+      <div><strong>เลขที่ควบคุมการผลิต (LOT):</strong> <span id="ws-lbl-lot" class="font-bold underline">-</span></div>
+    </div>
+
+    <!-- รายละเอียดวัตถุดิบและสูตรผสม -->
+    <div>
+      <h3 class="text-sm font-bold border-b pb-1 mb-2">🔬 รายละเอียดการเตรียมสารเคมีและสูตรคำนวณ</h3>
+      <table class="w-full border-collapse border border-slate-400 text-left">
+        <thead>
+          <tr class="bg-slate-100">
+            <th class="border border-slate-400 p-2">หัวข้อ</th>
+            <th class="border border-slate-400 p-2">รายละเอียดจากการคำนวณหน้างาน</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="border border-slate-400 p-2 font-bold">รายการยาตาที่เลือกผลิต</td>
+            <td id="ws-lbl-product" class="border border-slate-400 p-2 font-bold">-</td>
+          </tr>
+          <tr>
+            <td class="border border-slate-400 p-2">ความเข้มข้นเป้าหมาย (Target Conc.)</td>
+            <td id="ws-calc-conc" class="border border-slate-400 p-2">-</td>
+          </tr>
+          <tr>
+            <td class="border border-slate-400 p-2">ปริมาณยาหลักสารตั้งต้น (Active Drug Vol.)</td>
+            <td id="ws-calc-active" class="border border-slate-400 p-2">-</td>
+          </tr>
+          <tr>
+            <td class="border border-slate-400 p-2">ปริมาณตัวทำละลายสารเจือจาง (Diluent)</td>
+            <td id="ws-calc-diluent" class="border border-slate-400 p-2">-</td>
+          </tr>
+          <tr>
+            <td class="border border-slate-400 p-2">ขนาดรวมที่ผลิตต่อบรรจุภัณฑ์</td>
+            <td id="ws-lbl-total-vol" class="border border-slate-400 p-2">-</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ส่วนเซ็นชื่อลงนาม -->
+    <div class="pt-12 grid grid-cols-2 gap-8 text-center">
+      <div class="space-y-8">
+        <div>.................................................................</div>
+        <div>ผู้เตรียมยา (Pharmacist / Staff)</div>
+        <div>วันที่: ....../............/............ เวลา: .............</div>
+      </div>
+      <div class="space-y-8">
+        <div>.................................................................</div>
+        <div>ผู้ตรวจสอบความถูกต้อง (Checker)</div>
+        <div>วันที่: ....../............/............ เวลา: .............</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ======================================================== -->
+  <!-- 📜 JAVASCRIPT LOGIC ENGINE -->
+  <!-- ======================================================== -->
+  <script>
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwEZCcj5dBKaKBEaYnLD0gpxXTI0CROmPeeHP8jMAsdPEIG3hmjz8hAL3kJTHeLfAFN/exec";
+    
+    const OPHTHALMIC_PRESETS = [
+      { id: 'eye-4x', label: 'วันละ 4 ครั้ง', sub: 'เช้า กลางวัน เย็น นอน', times: 4, timing: 'เช้า กลางวัน เย็น และก่อนนอน' },
+      { id: 'eye-q2h', label: 'ทุก 2 ชั่วโมง', sub: 'หยอดถี่ระงับเชื้อ', times: 12, timing: 'ทุก 2 ชั่วโมง' },
+      { id: 'eye-q4h', label: 'ทุก 4 ชั่วโมง', sub: 'หยอดควบคุมอาการ', times: 6, timing: 'ทุก 4 ชั่วโมง' },
+      { id: 'eye-q6h', label: 'ทุก 6 ชั่วโมง', sub: 'หยอดทุก 6 ชม.', times: 4, timing: 'ทุก 6 ชั่วโมง' },
+      { id: 'eye-prn', label: 'PRN', sub: 'เมื่อมีอาการระคายตา', times: '', timing: 'เมื่อมีอาการระคายเคืองตา' }
+    ];
+
+    window.onload = () => {
+      if (!sessionStorage.getItem('rxUser')) {
+        location.href = 'index.html';
+      } else {
+        document.getElementById('displayUserName').textContent = sessionStorage.getItem('rxUser');
+        if (sessionStorage.getItem('rxDemoMode') === 'true') document.getElementById('demoBadge').classList.remove('hidden');
+        document.getElementById('orderDate').valueAsDate = new Date();
+        
+        setupFreqChips();
+        fetchOphthalmicProducts();
+        generateLotNumber();
+      }
+    };
+
+    function logout() { sessionStorage.clear(); location.href = 'index.html'; }
+
+    function setupFreqChips() {
+      const grid = document.getElementById('dynamicFreqGrid');
+      grid.innerHTML = OPHTHALMIC_PRESETS.map(f => `
+        <input type="radio" name="freq" id="freq-${f.id}" value="${f.id}" class="hidden freq-radio">
+        <label for="freq-${f.id}" class="flex flex-col items-center justify-center p-3 border-2 rounded-xl cursor-pointer font-bold text-center" style="border-color:#b7d1e2; color:#2c4a63;" onclick="applyPreset('${f.times}', '${f.timing}')">
+          <span class="text-base font-black">${f.label}</span>
+          <span class="text-[11px] font-medium text-slate-400">${f.sub}</span>
+        </label>
+      `).join('');
+    }
+
+    function applyPreset(times, timing) {
+      document.getElementById('timesPerDay').value = times;
+      document.getElementById('timingText').value = timing;
+      buildSigText();
+    }
+
+    // =========================================
+    // 🏷️ GENERATE LOT NUMBER (EY Lox Prefix)
+    // =========================================
+    async function generateLotNumber() {
+      const d = new Date(document.getElementById('orderDate').value || new Date());
+      const yy = String(d.getFullYear() + 543).slice(-2);
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const prefix = `EY${yy}${mm}`;
+
+      document.getElementById('lotDisplay').textContent = `${prefix}...`;
+      document.getElementById('lotDisplay').classList.add('lot-loading');
+
+      let seq = 1;
+      if (sessionStorage.getItem('rxDemoMode') !== 'true') {
+        try {
+          const res = await fetch(`${SCRIPT_URL}?action=getNextLotSeq&prefix=${prefix}`);
+          const data = await res.json();
+          seq = data.nextSeq || 1;
+        } catch(e) { seq = 1; }
+      } else {
+        seq = Math.floor(Math.random() * 5) + 1;
+      }
+
+      const seqStr = String(seq).padStart(3, '0');
+      const fullLot = `${prefix}${seqStr}`;
+
+      document.getElementById('lotDisplay').textContent = fullLot;
+      document.getElementById('lotDisplay').classList.remove('lot-loading');
+      document.getElementById('lot-prefix-text').textContent = "EY";
+      document.getElementById('lot-year').textContent = yy;
+      document.getElementById('lot-month').textContent = mm;
+      document.getElementById('lot-seq').textContent = seqStr;
+      document.getElementById('lotNumber').value = fullLot;
+      
+      document.getElementById('lot-status').textContent = `✅ LOT พร้อมใช้งาน (ลำดับ ${seq})`;
+      syncWorksheetValues();
+    }
+
+    function onDateChange() { generateLotNumber(); }
+
+    // =========================================
+    // 📝 WORDING STRUCTURE ENGINE (หยอดตา)
+    // =========================================
+    function buildSigText() {
+      const side = document.querySelector('input[name="eyeside"]:checked')?.value || 'ข้างซ้าย';
+      const dose = document.getElementById('dosePerTime').value;
+      const times = document.getElementById('timesPerDay').value;
+      const timing = document.getElementById('timingText').value;
+      const warning = document.getElementById('labelWarning').value;
+
+      let sig = "";
+      // หยอดตา ___(ข้างที่จะหยอด)___  ___(จำนวน)___ หยด   ___(ความถี่ / เวลาที้่ให้หยด)_____
+      if (dose) sig += `หยอดตา ${side} ครั้งละ ${dose} หยด`;
+      if (times) sig += ` วันละ ${times} ครั้ง`;
+      if (timing) sig += ` ${timing}`;
+      if (warning) sig += ` \n⚠️ ${warning}`;
+
+      document.getElementById('sigPreview').textContent = sig || "— กรุณากรอกข้อมูลวิธีใช้ยา —";
+      document.getElementById('sum-sig').textContent = sig || "— ยังไม่ได้ระบุวิธีสั่งใช้ยา —";
+    }
+
+    function syncVolumeUnit() {
+      const unit = document.getElementById('prepVolumeUnit').value;
+      document.getElementById('sum-vol-unit').textContent = unit;
+    }
+
+    function changePrepCount(val) {
+      const el = document.getElementById('prepCount');
+      el.value = Math.max(1, parseInt(el.value) + val);
+      document.getElementById('prepCountDisplay').textContent = el.value;
+      updateSummary();
+    }
+
+    function updateSummary() {
+      document.getElementById('sum-volume').textContent = document.getElementById('prepVolume').value || '0';
+      document.getElementById('sum-count').textContent = document.getElementById('prepCount').value;
+    }
+
+    // =========================================
+    // 🧮 WORKSHEET DYNAMIC SYNC & PRINT
+    // =========================================
+    function syncWorksheetValues() {
+      document.getElementById('ws-lbl-hn').textContent = document.getElementById('hn').value || '-';
+      document.getElementById('ws-lbl-name').textContent = document.getElementById('patientName').value || '-';
+      document.getElementById('ws-lbl-ward').textContent = document.getElementById('wardInput').value || '-';
+      document.getElementById('ws-lbl-lot').textContent = document.getElementById('lotNumber').value || '-';
+      
+      const select = document.getElementById('productSelect');
+      document.getElementById('ws-lbl-product').textContent = select.options[select.selectedIndex]?.textContent || '-';
+      
+      document.getElementById('ws-calc-conc').textContent = document.getElementById('ws-target-conc').value || '-';
+      document.getElementById('ws-calc-active').textContent = document.getElementById('ws-active-vol').value || '-';
+      document.getElementById('ws-calc-diluent').textContent = document.getElementById('ws-diluent').value || '-';
+      
+      const vol = document.getElementById('prepVolume').value || '0';
+      const unit = document.getElementById('prepVolumeUnit').value || 'ml';
+      document.getElementById('ws-lbl-total-vol').textContent = `${vol} ${unit}`;
+    }
+
+    function printWorksheet() {
+      syncWorksheetValues();
+      window.print(); // ใช้ Media Queries ในการสลับ Layout พริ้นต์อัตโนมัติ
+    }
+
+    // =========================================
+    // 🏥 MASTER DATA LOAD & LOOKUPS
+    // =========================================
+    async function fetchOphthalmicProducts() {
+      const loadingMsg = document.getElementById('product-loading');
+      if (sessionStorage.getItem('rxDemoMode') === 'true') {
+        const mock = [
+          { id:"10", genericName:"0.02% Atropine Eye Drop", brandName:"ศิริราชโมเดล", strength:"0.02%", expiryDays:"30", storage:"ตู้เย็น (2-8°C)", defaultWarning:"ยาใช้เฉพาะดวงตา ห้ามรับประทาน" },
+          { id:"11", genericName:"Fortified Vancomycin Eye Drop", brandName:"Sterile Lab", strength:"50 mg/ml", expiryDays:"14", storage:"ตู้เย็น (2-8°C)", defaultWarning:"เก็บให้พ้นแสงและห้ามใช้หากเกิดสารตกตะกอน" }
+        ];
+        populateDropdown(mock);
+        loadingMsg.textContent = "⚠️ โหมดทดสอบจำลองคลังยาตาสำเร็จ"; return;
+      }
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=getProductList`);
+        const data = await res.json();
+        const filtered = data.filter(p => p.status !== 'inactive' && p.productGroup === 'Ophthalmic');
+        populateDropdown(filtered);
+        loadingMsg.textContent = `โหลดสำเร็จ (${filtered.length} รายการ)`;
+      } catch(e) { loadingMsg.textContent = "❌ ไม่สามารถโหลดรายการยาจากคลังได้"; }
+    }
+
+    function populateDropdown(data) {
+      const select = document.getElementById('productSelect');
+      data.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p.id; opt.textContent = `${p.genericName} (${p.brandName || '-'})`;
+        opt.dataset.generic = p.genericName; opt.dataset.brand = p.brandName || '-';
+        opt.dataset.strength = p.strength; opt.dataset.expiry = p.expiryDays;
+        opt.dataset.storage = p.storage; opt.dataset.warning = p.defaultWarning;
+        select.appendChild(opt);
+      });
+    }
+
+    function onProductChange() {
+      const select = document.getElementById('productSelect');
+      const opt = select.options[select.selectedIndex];
+      const card = document.getElementById('productInfoCard');
+      if (!select.value) { card.classList.add('hidden'); return; }
+
+      card.classList.remove('hidden');
+      document.getElementById('info-generic').textContent = opt.dataset.generic;
+      document.getElementById('info-brand').textContent = opt.dataset.brand;
+      document.getElementById('info-strength').textContent = opt.dataset.strength;
+      document.getElementById('info-expiry-days').textContent = opt.dataset.expiry;
+      document.getElementById('info-storage').textContent = opt.dataset.storage;
+      document.getElementById('sum-product').textContent = opt.textContent;
+
+      if (opt.dataset.warning) {
+        document.getElementById('autoWarningBox').classList.remove('hidden');
+        document.getElementById('autoWarningText').textContent = opt.dataset.warning;
+        document.getElementById('labelWarning').value = opt.dataset.warning;
+      }
+      buildSigText();
+      syncWorksheetValues();
+    }
+
+    const wards = ["OPD PED","NICU","PICU","2ก","3ข","สว.1/8B","Nursing Home"];
+    function showWards() { document.getElementById('wardList').classList.remove('hidden'); renderWards(wards); }
+    function renderWards(items) {
+      document.getElementById('wardList').innerHTML = items.map(w => `<div class="p-3 hover:bg-slate-100 cursor-pointer text-center font-bold text-slate-700" onclick="selectWard('${w}')">${w}</div>`).join('');
+    }
+    function filterWards() { renderWards(wards.filter(w => w.toLowerCase().includes(document.getElementById('wardInput').value.toLowerCase()))); }
+    function selectWard(w) { document.getElementById('wardInput').value = w; document.getElementById('wardList').classList.add('hidden'); syncWorksheetValues(); }
+
+    async function fetchPatientData() {
+      const hn = document.getElementById('hn').value.trim();
+      const status = document.getElementById('hn-status');
+      if (!hn) return;
+      status.innerText = "⏳ ค้นหาประวัติ...";
+      if (sessionStorage.getItem('rxDemoMode') === 'true') { status.innerText = "⚠️ Demo Mode"; syncWorksheetValues(); return; }
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=getLatestOrder&hn=${hn}`);
+        const data = await res.json();
+        if (data && data.hn) {
+          document.getElementById('patientName').value = data.patientName || "";
+          status.innerText = "✅ ดึงประวัติสำเร็จ"; status.style.color = "#10b981";
+        } else {
+          status.innerText = "🔹 ผู้ป่วยใหม่"; status.style.color = "#9abacf";
+        }
+        syncWorksheetValues();
+      } catch(e) { status.innerText = "❌ เกิดข้อผิดพลาดการเชื่อมต่อ"; }
+    }
+
+    function onNextApptChange() {
+      const val = document.getElementById('nextAppointment').value;
+      const display = document.getElementById('nextApptDisplay');
+      if (!val) { display.textContent = ''; return; }
+      const d = new Date(val);
+      const months = ['','ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+      const diff = Math.round((new Date(val).setHours(0,0,0,0) - new Date().setHours(0,0,0,0)) / (1000*60*60*24));
+      display.textContent = `${d.getDate()} ${months[d.getMonth()+1]} ${d.getFullYear()+543} (อีก ${diff} วัน)`;
+    }
+
+    // =========================================
+    // 💾 บันทึกและส่งพิมพ์ฉลากหลัก (Google Sheet Sync)
+    // =========================================
+    async function saveOrder() {
+      const saveBtn = document.getElementById('saveBtn');
+      const hn = document.getElementById('hn').value.trim();
+      const pName = document.getElementById('patientName').value.trim();
+      const productSel = document.getElementById('productSelect');
+      
+      if (!hn || !pName || !productSel.value) { alert("⚠️ กรุณาระบุข้อมูลคนไข้และเลือกรายการยาตาให้ครบถ้วนก่อนส่งพิมพ์ฉลากค่ะ"); return; }
+
+      const opt = productSel.options[productSel.selectedIndex];
+      const formData = new URLSearchParams();
+      formData.append("action", "saveRxOrder");
+      formData.append("orderDate", document.getElementById('orderDate').value);
+      formData.append("lotNumber", document.getElementById('lotNumber').value);
+      formData.append("hn", hn);
+      formData.append("patientName", pName);
+      formData.append("patientWeight", document.getElementById('patientWeight').value);
+      formData.append("ward", document.getElementById('wardInput').value);
+      formData.append("nextAppointment", document.getElementById('nextAppointment').value);
+      formData.append("productId", productSel.value);
+      formData.append("productName", opt.textContent);
+      formData.append("genericName", opt.dataset.generic);
+      formData.append("brandName", opt.dataset.brand);
+      formData.append("strength", opt.dataset.strength);
+      formData.append("dosageForm", "ยาตาปราศจากเชื้อ");
+      formData.append("productUnit", document.getElementById('prepVolumeUnit').value);
+      formData.append("packageUnit", "ขวด");
+      formData.append("expiryDays", opt.dataset.expiry);
+      formData.append("storage", opt.dataset.storage);
+      formData.append("rawAmount", "0"); // ปลดออกตามบรีฟ
+      formData.append("prepVolume", document.getElementById('prepVolume').value);
+      formData.append("prepCount", document.getElementById('prepCount').value);
+      formData.append("dosePerTime", document.getElementById('dosePerTime').value);
+      formData.append("timesPerDay", document.getElementById('timesPerDay').value);
+      formData.append("timingText", document.getElementById('timingText').value);
+      formData.append("sigText", document.getElementById('sigPreview').textContent);
+      formData.append("labelWarning", document.getElementById('labelWarning').value);
+      formData.append("recordedBy", sessionStorage.getItem('rxUser'));
+      formData.append("productGroup", "Ophthalmic");
+
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = `<span class="spinner"></span> ระบบกำลังบันทึกและส่งพริ้นต์...`;
+
+      if (sessionStorage.getItem('rxDemoMode') === 'true') {
+        await new Promise(r => setTimeout(r, 600));
+        window.open("label.html?" + formData.toString(), "_blank");
+        alert("⚠️ บันทึกข้อมูลใบผลิตยาตาสำเร็จ (Demo Mode จำลองหน้าฉลาก)");
+        saveBtn.disabled = false; saveBtn.innerHTML = "💾 บันทึกข้อมูลและจัดพิมพ์ฉลากยาตา";
+        return;
+      }
+
+      try {
+        await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: formData });
+        window.open("label.html?" + formData.toString(), "_blank");
+        alert("✅ บันทึกข้อมูลและประวัติลงฐานข้อมูลสารละลายยาตาสำเร็จ!");
+        location.href = 'menu.html';
+      } catch(e) {
+        alert("❌ เกิดข้อผิดพลาดทางเทคนิค: " + e.message);
+        saveBtn.disabled = false; saveBtn.innerHTML = "💾 บันทึกข้อมูลและจัดพิมพ์ฉลากยาตา";
+      }
+    }
+  </script>
+</body>
+</html>
