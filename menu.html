@@ -24,26 +24,32 @@
       transform: translateY(-5px);
       box-shadow: 0 20px 35px -5px rgba(139,133,193,0.3);
     }
+    .btn-primary {
+      background: linear-gradient(135deg, #4a4780, #8b85c1);
+      color: white; padding: 12px 24px; border-radius: 12px;
+      font-weight: 700; display: inline-block;
+    }
   </style>
 </head>
 <body class="p-4 md:p-8 flex flex-col justify-between min-h-screen">
 
-  <!-- LOGIN GUARD -->
+  <!-- LOGIN GUARD (แสดงเมื่อไม่ได้ล็อกอิน) -->
   <div id="loginPage" class="min-h-[80vh] flex items-center justify-center hidden">
     <div class="max-w-md w-full bg-white p-10 rounded-3xl shadow-2xl text-center">
-      <h1 class="text-xl font-black mb-2" style="color:#1e1b3a;">⚠️ กรุณาเข้าสู่ระบบก่อน</h1>
-      <p class="text-sm text-gray-400 mb-6">โปรดไปที่หน้าหลักเพื่อเข้าสู่ระบบ</p>
-      <a href="index.html" class="btn-primary bg-slate-800 text-white px-6 py-3 rounded-xl inline-block font-bold">กลับหน้าหลัก 🏠</a>
+      <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">⚠️</div>
+      <h1 class="text-xl font-black mb-2" style="color:#1e1b3a;">กรุณาเข้าสู่ระบบก่อนใช้งาน</h1>
+      <p class="text-sm text-gray-400 mb-6">โปรดกลับไปที่หน้าหลักเพื่อตรวจสอบสิทธิ์เจ้าหน้าที่ค่ะ</p>
+      <a href="index.html" class="btn-primary">กลับหน้าหลักล็อกอิน 🏠</a>
     </div>
   </div>
 
-  <!-- MAIN PORTAL -->
+  <!-- MAIN PORTAL CONTAINER -->
   <div id="mainApp" class="max-w-5xl mx-auto w-full hidden space-y-8">
 
     <!-- Top Info Bar -->
     <div class="flex flex-wrap items-center gap-2">
       <span class="text-xs font-bold text-purple-200 uppercase">ผู้ใช้งานปัจจุบัน:</span>
-      <span id="displayUserName" class="text-sm font-black px-3 py-1 bg-white rounded-xl shadow-sm text-[#4a4780]"></span>
+      <span id="displayUserName" class="text-sm font-black px-3 py-1 bg-white rounded-xl shadow-sm text-[#4a4780]">-</span>
       <div class="flex gap-2 ml-auto">
         <a href="productlist.html" class="text-xs font-bold px-4 py-2 bg-white/20 border border-white/20 rounded-xl text-white hover:bg-white/30 transition-all">📦 คลังรายการยา</a>
         <a href="dashboard.html" class="text-xs font-bold px-4 py-2 bg-white/20 border border-white/20 rounded-xl text-white hover:bg-white/30 transition-all">📊 Dashboard</a>
@@ -58,7 +64,7 @@
       <div class="h-1 w-20 bg-amber-400 mx-auto md:ml-0 mt-4 rounded-full"></div>
     </header>
 
-    <!-- MENU CARDS GRID (5 Cards) -->
+    <!-- MENU CARDS GRID -->
     <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
       <!-- Card 1: ยากิน -->
@@ -68,17 +74,17 @@
           <h2 class="text-lg font-black text-[#1e1b3a] mb-2">ยากินเฉพาะราย (Oral)</h2>
           <p class="text-xs text-gray-500 leading-relaxed">ยาน้ำแขวนตะกอน (Suspension), ยาน้ำเชื่อม (Syrup), ยาสารละลาย หรือยาแคปซูลแบ่งบรรจุสำหรับผู้ป่วยเด็ก</p>
         </div>
-        <div class="text-xs font-bold text-purple-600 mt-6 flex items-center gap-1">เข้าสู่การฟอร์มผลิตยากิน &rarr;</div>
+        <div class="text-xs font-bold text-purple-600 mt-6 flex items-center gap-1">เข้าสู่ฟอร์มผลิตยากิน &rarr;</div>
       </div>
 
-      <!-- Card 2: ยาตา/หู -->
+      <!-- Card 2: ยาตาเฉพาะราย (ปรับลิงก์วิ่งเข้าหาไฟล์ใหม่โดยตรง) -->
       <div onclick="navigateToForm('Ophthalmic')" class="menu-card hover:border-sky-400">
         <div>
           <div class="w-14 h-14 bg-sky-100 rounded-2xl flex items-center justify-center text-3xl mb-4">👁️</div>
-          <h2 class="text-lg font-black text-[#1e1b3a] mb-2">ยาตา / ยาหยอดหู</h2>
-          <p class="text-xs text-gray-500 leading-relaxed">ยาหยอดตาปราศจากเชื้อ (Sterile Eye Drops) และยาหยอดหู (Otic Drops) สลับโครงสร้างวิธีใช้เจาะจงเฉพาะข้าง</p>
+          <h2 class="text-lg font-black text-[#1e1b3a] mb-2">ยาตาเฉพาะราย (Ophthalmic)</h2>
+          <p class="text-xs text-gray-500 leading-relaxed">ยาหยอดตาปราศจากเชื้อ (Sterile Eye Drops) สำหรับหอผู้ป่วยเด็กและเฉพาะราย พร้อมระบบพิมพ์ใบ Worksheet คำนวณสารหน้าห้อง Cleanroom</p>
         </div>
-        <div class="text-xs font-bold text-sky-600 mt-6 flex items-center gap-1">เข้าสู่ฟอร์มผลิตยาตา/หู &rarr;</div>
+        <div class="text-xs font-bold text-sky-600 mt-6 flex items-center gap-1">เข้าสู่ฟอร์มผลิตยาตา &rarr;</div>
       </div>
 
       <!-- Card 3: ยาฉีด -->
@@ -112,7 +118,6 @@
       </div>
 
     </main>
-
   </div>
 
   <!-- FOOTER -->
@@ -125,7 +130,7 @@
   <!-- ======================================== -->
   <script>
     window.onload = () => {
-      // 🔐 ตรวจสอบสิทธิ์การเข้าใช้งาน
+      // 🔐 ตรวจสอบสิทธิ์การเข้าใช้งานจาก Session
       if (!sessionStorage.getItem('rxUser')) {
         document.getElementById('loginPage').classList.remove('hidden');
         return;
@@ -134,9 +139,13 @@
       document.getElementById('displayUserName').textContent = sessionStorage.getItem('rxUser');
     };
 
-    // 🔄 ฟังก์ชันนำทางพ่วงประเภทกลุ่มยาไปบน URL
+    // 🔄 ฟังก์ชันนำทางสลับหน้าตามกลุ่มงานที่แยกไฟล์
     function navigateToForm(groupType) {
-      location.href = `index.html?group=${groupType}`;
+      if (groupType === 'Ophthalmic') {
+        location.href = 'ophthalmic.html'; // วิ่งไปไฟล์งานยาตาตัวใหม่โดยตรง
+      } else {
+        location.href = `index.html?group=${groupType}`; // กลุ่มงานอื่นยังส่งไปประมวลผลหน้าเดิม
+      }
     }
 
     function logout() { 
