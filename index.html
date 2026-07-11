@@ -282,7 +282,7 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
               <label class="field-label text-amber-800">ชื่อสามัญยา (Manual) *</label>
-              <input type="text" id="m-generic" placeholder="เช่น Vancomycin Eye Drop" class="input-field border-amber-300" oninput="buildSigText(); updateSummary();">
+              <input type="text" id="m-generic" placeholder="เช่น ยาผสมพิเศษนอกคลัง" class="input-field border-amber-300" oninput="buildSigText(); updateSummary();">
             </div>
             <div>
               <label class="field-label text-amber-800">ความแรง (Strength) *</label>
@@ -290,7 +290,7 @@
             </div>
             <div>
               <label class="field-label text-amber-800">รูปแบบผลิตภัณฑ์สำเร็จ *</label>
-              <input type="text" id="m-outputtype" placeholder="เช่น ยาหยอดตาปราศจากเชื้อ" class="input-field border-amber-300">
+              <input type="text" id="m-outputtype" placeholder="เช่น ยาน้ำเฉพาะราย" class="input-field border-amber-300">
             </div>
           </div>
         </div>
@@ -402,21 +402,6 @@
       <section class="bg-white p-6 rounded-2xl card-shadow space-y-5">
         <h2 class="section-title">📝 วิธีสั่งใช้ยาและบริเวณบริหารยา</h2>
 
-        <!-- ฟิลด์เฉพาะตัวกรณีเลือก ยาตา Ophthalmic (เพิ่มให้เลือก ตาซ้าย ตากระตุก หรือทั้งสองข้าง) -->
-        <div id="ophthalmicSpecialFields" class="hidden bg-sky-50/50 p-4 border border-sky-200 rounded-2xl">
-          <label class="field-label text-sky-800">ระบุบริเวณอวัยวะเป้าหมาย (Eye/Ear Side) *</label>
-          <div class="grid grid-cols-3 gap-3">
-            <input type="radio" name="eyeside" id="eye-left" value="ข้างซ้าย" class="hidden freq-radio" onchange="buildSigText()" checked>
-            <label for="eye-left" class="flex p-3 border border-sky-300 rounded-xl cursor-pointer font-bold justify-center bg-white text-sky-900">ข้างซ้าย (Left)</label>
-            
-            <input type="radio" name="eyeside" id="eye-right" value="ข้างขวา" class="hidden freq-radio" onchange="buildSigText()">
-            <label for="eye-right" class="flex p-3 border border-sky-300 rounded-xl cursor-pointer font-bold justify-center bg-white text-sky-900">ข้างขวา (Right)</label>
-
-            <input type="radio" name="eyeside" id="eye-both" value="ทั้งสองข้าง" class="hidden freq-radio" onchange="buildSigText()">
-            <label for="eye-both" class="flex p-3 border border-sky-300 rounded-xl cursor-pointer font-bold justify-center bg-white text-sky-900">ทั้งสองข้าง (OU/Both)</label>
-          </div>
-        </div>
-
         <div>
           <label class="field-label mb-3 block">เลือกความถี่ด่วน (Preset Sig)</label>
           <!-- ชุดความถี่แยกตามประเภทกลุ่มยา จะถูก Render สลับอัตโนมัติจาก JS -->
@@ -496,7 +481,7 @@
 
         <!-- LOT Number Display -->
         <div class="lot-display mb-6">
-          <p class="text-[10px] font-black uppercase tracking-[0.25em] mb-3" style="color:#8b85c1;">🏷 nighttime Lot Number (Auto Generated)</p>
+          <p class="text-[10px] font-black uppercase tracking-[0.25em] mb-3" style="color:#8b85c1;">🏷️ Lot Number (Auto Generated)</p>
           <div id="lotDisplay" class="lot-number-text mb-4">ET______</div>
           <div class="flex justify-center gap-3 flex-wrap mt-2">
             <div class="lot-pill">
@@ -539,21 +524,15 @@
 
     // 🌐 อ่านค่ากลุ่มงานยาที่ถูกส่งมาจาก Portal Menu
     const urlParams = new URLSearchParams(window.location.search);
-    const currentGroup = urlParams.get('group') || 'Oral'; // ค่า Default เผื่อหลุดคือยากิน
+    const currentGroup = urlParams.get('group') || 'Oral'; // ค่า Default คือยากิน
 
-    // ตัวแปรเก็บโครงสร้างปุ่มความถี่แยกกลุ่ม
+    // ตัวแปรเก็บโครงสร้างปุ่มความถี่แยกกลุ่ม (ตัด Ophthalmic ออกแล้ว)
     const PRESET_FREQUENCIES = {
       'Oral': [
         { id: '1x1-hs', label: '1×1', sub: 'ก่อนนอน (hs)', times: 1, timing: 'ก่อนนอน' },
         { id: '1x1-ac', label: '1×1', sub: 'ก่อนอาหาร (ac)', times: 1, timing: 'ก่อนอาหาร' },
         { id: '1x2-pc', label: '1×2', sub: 'หลังอาหาร เช้า-เย็น', times: 2, timing: 'หลังอาหาร เช้า-เย็น' },
         { id: '1x3-pc', label: '1×3', sub: 'หลังอาหาร 3 เวลา', times: 3, timing: 'หลังอาหาร เช้า-กลางวัน-เย็น' }
-      ],
-      'Ophthalmic': [
-        { id: 'eye-4x', label: 'วันละ 4 ครั้ง', sub: 'เช้า กลางวัน เย็น นอน', times: 4, timing: 'เช้า กลางวัน เย็น และก่อนนอน' },
-        { id: 'eye-q2h', label: 'ทุก 2 ชั่วโมง', sub: 'หยอดถถี่ระงับเชื้อ', times: 12, timing: 'ทุก 2 ชั่วโมง' },
-        { id: 'eye-q4h', label: 'ทุก 4 ชั่วโมง', sub: 'หยอดทุก 4 ชม.', times: 6, timing: 'ทุก 4 ชั่วโมง' },
-        { id: 'eye-prn', label: 'PRN', sub: 'เมื่อมีอาการระคายตา', times: '', timing: 'เมื่อมีอาการหยอดตากระตุกหรือระคายเคือง' }
       ],
       'Injectable': [
         { id: 'inj-1x1', label: 'วันละ 1 ครั้ง', sub: 'q24h protocol', times: 1, timing: 'ทุก 24 ชั่วโมง' },
@@ -627,13 +606,10 @@
       location.href = 'index.html'; 
     }
 
+    // 🛡️ คัดกรองความปลอดภัย: ถ้าเจ้าหน้าที่ล๊อคอินอยู่แล้ว ให้ส่งไปที่หน้า Portal เมนูหลักกลางทันที
     window.onload = () => { 
       if (sessionStorage.getItem('rxUser')) { 
-        if (!window.location.search.includes('group=')) {
-          location.href = 'menu.html';
-        } else {
-          showMainApp(); 
-        }
+        location.href = 'menu.html';
       } 
     };
 
@@ -648,10 +624,6 @@
       if (currentGroup === 'Oral') {
         gTitle.textContent = "ยากินเฉพาะราย"; gIcon.textContent = "👄";
         lblDose.textContent = "รับประทานครั้งละ";
-      } else if (currentGroup === 'Ophthalmic') {
-        gTitle.textContent = "ยาตา / ยาหยอดหู"; gIcon.textContent = "👁️";
-        lblDose.textContent = "หยอดตา/หูครั้งละ";
-        document.getElementById('ophthalmicSpecialFields').classList.remove('hidden');
       } else if (currentGroup === 'Injectable') {
         gTitle.textContent = "ยาฉีด / IV Admixture"; gIcon.textContent = "💉";
         lblDose.textContent = "ให้ยาบริหารครั้งละ";
@@ -674,10 +646,10 @@
       let htmlChips = currentPresets.map(f => `
         <input type="radio" name="freq" id="freq-${f.id}" value="${f.id}" class="hidden freq-radio">
         <label for="freq-${f.id}"
-          class="flex flex-col items-center justify-center p-3 border-2 rounded-xl cubic-bezier cursor-pointer font-bold transition-all text-center"
+          class="flex flex-col items-center justify-center p-3 border-2 rounded-xl cursor-pointer font-bold transition-all text-center"
           style="border-color:#e8c4d8; color:#4a4780;" onclick="applyDirectPreset('${f.times}', '${f.timing}')">
           <span class="text-base font-black">${f.label}</span>
-          <span class="text-[11px] font-medium">${f.sub}</span>
+          <span class="text-[11px] font-medium text-slate-400">${f.sub}</span>
         </label>
       `).join('');
       
@@ -732,7 +704,6 @@
     }
     function getLotPrefix(dateStr) {
       let letterCode = "ET"; 
-      if (currentGroup === 'Ophthalmic') letterCode = "EY";
       if (currentGroup === 'Injectable') letterCode = "IJ";
       if (currentGroup === 'Manual') letterCode = "MN";
       return `${letterCode}${getThaiYear2Digit(dateStr)}${getMonthStr(dateStr)}`;
@@ -776,24 +747,11 @@
     // =========================================
     // 🏥 WARD LIST
     // =========================================
-    const wards = [
-      "OPD PED","OPD","2ก","2ข","2ค","2ง","2จ","2ฉ","3ก","3ข","3ค","3ง","3จ","3ฉ",
-      "4ก","4ข","4ค","4ง","4จ","4ฉ","5ก","5ข","5ค","5ง","5จ","5ฉ",
-      "6ก","6ข","6ค","6ง","6จ","6ฉ",
-      "8A (ACRO)","AE1","AE2","AE3","AE4","Burn Unit",
-      "CCU","CVT ICU","LR","MICU 1","MICU 2","MICU 3",
-      "NSICU","NICU","PICU","SCTU","SICU 1","SICU 2","SICU 3",
-      "IMC 2ง","IMC 3ข","IMC 3จ","IMC 4ก","IMC 4ข","IMC 4ค",
-      "กว.6/1","กว.6/2","กว.7/1","กว.7/2",
-      "สว.1/8B","สว.1/8C","สว.1/9A","สว.1/9B","สว.1/9C",
-      "สว.1/11","สว.1/12","สว.1/13","สว.1/14","สว.1/15",
-      "จิตเวช","สงฆ์อาพาธ","Nursing Home"
-    ];
+    const wards = ["OPD PED","OPD","2ก","2ข","2ค","2ง","2จ","2ฉ","3ก","3ข","NICU","PICU","สว.1/8B","สงฆ์อาพาธ","Nursing Home"];
     function showWards() { document.getElementById('wardList').classList.remove('hidden'); renderWards(wards); }
     function renderWards(items) {
       document.getElementById('wardList').innerHTML = items.map(w =>
-        `<div class="p-3 hover:bg-purple-50 cursor-pointer border-b border-purple-50 font-black text-center text-sm"
-              style="color:#4a4780;" onclick="selectWard('${w}')">${w}</div>`
+        `<div class="p-3 hover:bg-purple-50 cursor-pointer border-b border-purple-50 font-black text-center text-sm" style="color:#4a4780;" onclick="selectWard('${w}')">${w}</div>`
       ).join('');
     }
     function filterWards() {
@@ -804,11 +762,6 @@
       document.getElementById('wardInput').value = w;
       document.getElementById('wardList').classList.add('hidden');
     }
-    document.addEventListener('click', e => {
-      const wl = document.getElementById('wardList');
-      const wi = document.getElementById('wardInput');
-      if (wl && !wl.contains(e.target) && e.target !== wi) wl.classList.add('hidden');
-    });
 
     // =========================================
     // 💊 PRODUCT LIST FETCH
@@ -827,14 +780,12 @@
           { id:"4", productGroup:"Oral", genericName:"Tacrolimus",         brandName:"Prograf",    strength:"1 mg/cap",   dosageForm:"แคปซูล", outputType:"ยาน้ำแขวนตะกอน", productUnit:"ml", packageUnit:"ขวด",    expiryDays:"56", storage:"ตู้เย็น (2-8°C)",  status:"active", defaultWarning:"เขย่าขวดก่อนใช้, เก็บในตู้เย็น (2-8°C), ป้องกันแสง" },
           { id:"5", productGroup:"Oral", genericName:"Metronidazole",      brandName:"Flagyl",     strength:"250 mg/tab", dosageForm:"เม็ด",   outputType:"ยาน้ำแขวนตะกอน", productUnit:"ml", packageUnit:"Syringe",expiryDays:"30", storage:"อุณหภูมิห้อง",     status:"active", defaultWarning:"เขย่าขวดก่อนใช้, ป้องกันแสง" },
           { id:"6", productGroup:"Oral", genericName:"6-Mercaptopurine",   brandName:"Purinetone", strength:"5 mg/ml",    dosageForm:"เม็ด",   outputType:"ยาน้ำแขวนตะกอน", productUnit:"ml", packageUnit:"ขวด",    expiryDays:"35", storage:"ตู้เย็น (2-8°C)",  status:"active", defaultWarning:"เขย่าขวดก่อนใช้, เก็บในตู้เย็น (2-8°C)" },
-          { id:"7", productGroup:"Ophthalmic", genericName:"0.02% Atropine Eye Drop", brandName:"-", strength:"0.02%",    dosageForm:"หยอด",   outputType:"ยาหยอดตา",        productUnit:"ml", packageUnit:"ขวด",    expiryDays:"30", storage:"ตู้เย็น (2-8°C)",  status:"active", defaultWarning:"ยาใช้เฉพาะดวงตา ห้ามรับประทาน" },
           { id:"8", productGroup:"Injectable", genericName:"Voriconazole Sterile Inj", brandName:"Vfend", strength:"0.5 mg/ml", dosageForm:"ยาฉีด",  outputType:"ยาฉีด",           productUnit:"ml", packageUnit:"vial",   expiryDays:"7",  storage:"ตู้เย็น (2-8°C)",  status:"active", defaultWarning:"สำหรับบริหารทางหลอดเลือดดำช้าๆ" }
         ];
         
         const filteredData = productData.filter(p => p.productGroup === currentGroup);
         populateProductDropdown(filteredData);
-        loadingMsg.textContent = `⚠️ Demo Mode — กรองตรงกลุ่มงานย่อย (${filteredData.length} รายการ)`;
-        loadingMsg.style.color = "#f59e0b";
+        loadingMsg.textContent = `⚠️ Demo Mode Loaded (${filteredData.length} รายการ)`;
         return;
       }
       try {
@@ -844,14 +795,11 @@
           productData = data.filter(p => p.status !== 'inactive' && p.productGroup === currentGroup);
           populateProductDropdown(productData);
           loadingMsg.textContent = `✅ โหลดรายการตรงกลุ่มสำเร็จ (${productData.length} รายการ)`;
-          loadingMsg.style.color = "#8b85c1";
         } else {
           loadingMsg.textContent = "⚠️ ไม่พบรายการยาสำหรับกลุ่มแผนกนี้";
-          loadingMsg.style.color = "#c4a8cb";
         }
       } catch(e) {
         loadingMsg.textContent = "❌ โหลดรายการยาไม่ได้";
-        loadingMsg.style.color = "#ef4444";
       }
     }
 
@@ -898,13 +846,6 @@
         document.getElementById('rawAmount').value = '';
         document.getElementById('rawUnitBadge').textContent   = '—';
         document.getElementById('sum-product').textContent    = '— ยังไม่ได้เลือก —';
-        document.getElementById('prepVolumeUnit').textContent = 'ml';
-        document.getElementById('prepCountUnit').textContent  = 'ขวด';
-        document.getElementById('sum-pkg-unit').textContent   = ' ขวด';
-        document.getElementById('doseUnit').textContent       = 'ml';
-        document.getElementById('autoWarningBox').classList.add('hidden');
-        document.getElementById('labelWarning').value         = '';
-        document.getElementById('autoCalcNote').classList.add('hidden');
         return;
       }
 
@@ -912,7 +853,6 @@
       const productUnit = opt.dataset.productUnit || 'ml';
       const packageUnit = opt.dataset.packageUnit || 'ขวด';
       const warning     = opt.dataset.warning     || '';
-      const storage     = opt.dataset.storage     || '-';
       const genericName = opt.dataset.generic     || '';
 
       infoCard.classList.remove('hidden');
@@ -920,10 +860,9 @@
       document.getElementById('info-brand').textContent       = opt.dataset.brand    || '-';
       document.getElementById('info-strength').textContent    = opt.dataset.strength || '-';
       document.getElementById('info-expiry-days').textContent = opt.dataset.expiry   || '-';
-      document.getElementById('info-storage').textContent     = storage;
+      document.getElementById('info-storage').textContent     = opt.dataset.storage  || '-';
 
       document.getElementById('rawUnitBadge').textContent   = dosageForm;
-
       document.getElementById('prepVolumeUnit').textContent = productUnit;
       document.getElementById('prepCountUnit').textContent  = packageUnit;
       document.getElementById('sum-pkg-unit').textContent   = ` ${packageUnit}`;
@@ -942,27 +881,13 @@
       }
 
       const rule = getAutoCalcRule(genericName);
-      const noteEl = document.getElementById('autoCalcNote');
-      const noteUnit = document.getElementById('prepCountUnit2');
-
       if (rule) {
-        noteEl.classList.remove('hidden');
-        noteUnit.textContent = packageUnit;
-        if (rule.prepVolumeFixed) {
-          document.getElementById('prepVolume').value = rule.prepVolumeFixed;
-          updateSummary();
-        }
+        if (rule.prepVolumeFixed) document.getElementById('prepVolume').value = rule.prepVolumeFixed;
         onRawAmountChange();
-      } else {
-        noteEl.classList.add('hidden');
       }
-
       buildSigText();
     }
 
-    // =========================================
-    // 🔢 AUTO-CALC PREP COUNT
-    // =========================================
     function onRawAmountChange() {
       const select      = document.getElementById('productSelect');
       const opt         = select.options[select.selectedIndex];
@@ -971,48 +896,33 @@
       const rule        = getAutoCalcRule(genericName);
 
       if (rule && rule.prepCountDivisor && rawVal > 0) {
-        const calcCount = Math.floor(rawVal / rule.prepCountDivisor);
-        const finalCount = Math.max(1, calcCount);
+        const finalCount = Math.max(1, Math.floor(rawVal / rule.prepCountDivisor));
         document.getElementById('prepCount').value = finalCount;
         document.getElementById('prepCountDisplay').textContent = finalCount;
         document.getElementById('sum-count').textContent = finalCount;
       }
     }
 
-    // =========================================
-    // 🏥 HN LOOKUP
-    // =========================================
     async function fetchPatientData() {
       const hn      = document.getElementById('hn').value.trim();
       const status  = document.getElementById('hn-status');
-      const isDemo  = sessionStorage.getItem('rxDemoMode') === 'true';
-      
-      if (!hn) { status.innerText = ""; return; }
+      if (!hn) return;
       status.innerText = "⏳ กำลังค้นหา...";
-      status.style.color = "#8b85c1";
-      
-      if (isDemo) { status.innerText = "⚠️ Demo Mode"; status.style.color = "#f59e0b"; return; }
-      
+      if (sessionStorage.getItem('rxDemoMode') === 'true') { status.innerText = "⚠️ Demo Mode"; return; }
       try {
         const res  = await fetch(`${SCRIPT_URL}?action=getLatestOrder&hn=${hn}`);
         const data = await res.json();
-        
         if (data && data.hn) {
           document.getElementById('patientName').value = data.patientName || "";
-          status.innerText = "✅ พบคนไข้ (ดึงชื่อเรียบร้อย)";
-          status.style.color = "#10b981"; 
+          status.innerText = "✅ พบคนไข้เรียบร้อย"; status.style.color = "#10b981"; 
         } else {
-          status.innerText = "🔹 คนไข้ใหม่ (กรอกข้อมูลปกติ)";
-          status.style.color = "#c4a8cb";
+          status.innerText = "🔹 คนไข้ใหม่"; status.style.color = "#c4a8cb";
         }
-      } catch(e) {
-        status.innerText = "❌ เชื่อมเซิร์ฟเวอร์ผิดพลาด";
-        status.style.color = "#ef4444";
-      }
+      } catch(e) { status.innerText = "❌ ผิดพลาด"; }
     }
 
     // =========================================
-    // 📋 BUILD SIG TEXT (Dynamic Label Language Engine)
+    // 📋 BUILD SIG TEXT
     // =========================================
     function buildSigText() {
       const dose    = document.getElementById('dosePerTime').value;
@@ -1022,48 +932,27 @@
       const warning = document.getElementById('labelWarning').value;
       
       let sig = "";
-
-      if (currentGroup === 'Ophthalmic') {
-        const eyeSide = document.querySelector('input[name="eyeside"]:checked')?.value || 'ข้างซ้าย';
-        if (dose) sig += `หยอดตา/หู ${eyeSide} ครั้งละ ${dose} ${unit}`;
-        if (times) sig += ` วันละ ${times} ครั้ง`;
-        if (timing) sig += ` ${timing}`;
-      } 
-      else if (currentGroup === 'Injectable') {
+      if (currentGroup === 'Injectable') {
         const route = document.getElementById('inj-route').value;
         const diluent = document.getElementById('inj-diluent').value;
         const rate = document.getElementById('inj-rate').value;
-        
         if (dose) sig += `บริหารยาขนาด ${dose} ${unit} ทาง [${route}]`;
         if (times) sig += ` วันละ ${times} ครั้ง (${timing || 'ตามแผนการรักษา'})`;
         if (diluent) sig += ` \nผสมเจือจางใน: ${diluent}`;
         if (rate) sig += ` อัตราการให้: ${rate}`;
-      } 
-      else if (currentGroup === 'Other') {
+      } else if (currentGroup === 'Other') {
         if (dose) sig += `ป้าย/ทา บริเวณที่พยาธิสภาพ ครั้งละ ${dose} ${unit}`;
-        if (times) sig += ` วันละ ${times} ครั้ง`;
-        if (timing) sig += ` ${timing}`;
-      } 
-      else if (currentGroup === 'Manual') {
-        if (dose) sig += `บริหารยาครั้งละ ${dose} ${unit}`;
         if (times) sig += ` วันละ ${times} ครั้ง ${timing}`;
-      }
-      else { 
+      } else { 
         if (dose)  sig += `รับประทานครั้งละ ${dose} ${unit}`;
-        if (times) sig += ` วันละ ${times} ครั้ง`;
-        if (timing) sig += ` ${timing}`;
+        if (times) sig += ` วันละ ${times} ครั้ง ${timing}`;
       }
 
       if (warning) sig += `\n⚠️ ${warning}`;
-      
-      const preview = sig || "— กรุณากรอกข้อมูลวิธีใช้ยา —";
-      document.getElementById('sigPreview').textContent = preview;
+      document.getElementById('sigPreview').textContent = sig || "— กรุณากรอกข้อมูลวิธีใช้ยา —";
       document.getElementById('sum-sig').textContent    = sig || "— ยังไม่ได้ระบุ —";
     }
 
-    // =========================================
-    // 🔢 PREP COUNT +/- & SUMMARY
-    // =========================================
     function changePrepCount(val) {
       const hidden = document.getElementById('prepCount');
       const newVal = Math.max(1, parseInt(hidden.value) + val);
@@ -1073,13 +962,10 @@
     }
     
     function updateSummary() {
-      const vVol = document.getElementById('prepVolume').value || '0';
-      document.getElementById('sum-volume').textContent = vVol;
+      document.getElementById('sum-volume').textContent = document.getElementById('prepVolume').value || '0';
       document.getElementById('sum-count').textContent  = document.getElementById('prepCount').value  || '1';
-      
       if (currentGroup === 'Manual') {
-        const mTitle = document.getElementById('m-generic').value.trim() || '— พิมพ์ชื่อยาด่วน —';
-        document.getElementById('sum-product').textContent = mTitle;
+        document.getElementById('sum-product').textContent = document.getElementById('m-generic').value.trim() || '— พิมพ์ชื่อยาด่วน —';
       }
     }
 
@@ -1098,10 +984,7 @@
       
       if (!hn || !pName)     { alert("⚠️ กรุณาระบุ HN และชื่อคนไข้ค่ะ"); return; }
       if (currentGroup !== 'Manual' && !productSel.value) { alert("⚠️ กรุณาเลือกรายการยาวัตถุดิบค่ะ"); return; }
-      if (currentGroup === 'Manual' && !document.getElementById('m-generic').value.trim()) { alert("⚠️ กรุณาระบุชื่อสามัญยาด่วนด้วยค่ะ"); return; }
-      if (!prepVolume)       { alert("⚠️ กรุณาระบุปริมาตรที่ผลิตสำเร็จค่ะ"); return; }
-      if (!dosePerTime)      { alert("⚠️ กรุณาระบุขนาดยาต่อครั้งค่ะ"); return; }
-      if (!lotNumber)        { alert("⚠️ ยังไม่มีเลข LOT กรุณารอสักครู่ค่ะ"); return; }
+      if (!prepVolume || !dosePerTime) { alert("⚠️ กรุณาระบุปริมาตรและขนาดยาต่อครั้งค่ะ"); return; }
 
       const v   = id => document.getElementById(id).value;
       const formData = new URLSearchParams();
@@ -1124,7 +1007,7 @@
         formData.append("productUnit",     "หน่วยสำเร็จ");
         formData.append("packageUnit",     "บรรจุภัณฑ์");
         formData.append("expiryDays",      "7"); 
-        formData.append("storage",         "ตามความเหมาะสมโปรโตคอลยาด่วน");
+        formData.append("storage",         "ตามความเหมาะสม");
         formData.append("rawAmount",       "0");
       } else {
         const opt = productSel.options[productSel.selectedIndex];
@@ -1155,22 +1038,18 @@
       saveBtn.innerHTML = `<span class="spinner"></span> กำลังบันทึก...`;
 
       if (isDemo) {
-        await new Promise(r => setTimeout(r, 900));
+        await new Promise(r => setTimeout(r, 500));
         window.open("label.html?" + formData.toString(), "_blank");
-        alert(`⚠️ Demo Mode\nLOT: ${lotNumber}\nไม่ได้บันทึกจริง`);
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = "💾 บันทึกและพิมพ์ฉลาก";
+        saveBtn.disabled = false; saveBtn.innerHTML = "💾 บันทึกและพิมพ์ฉลาก";
         return;
       }
       try {
         await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', body: formData });
         window.open("label.html?" + formData.toString(), "_blank");
-        alert(`✅ บันทึกสำเร็จค่ะ!\n🏷️ LOT: ${lotNumber}`);
         location.href = 'menu.html';
       } catch(e) {
         alert("❌ เกิดข้อผิดพลาด: " + e.message);
-        saveBtn.disabled = false;
-        saveBtn.innerHTML = "💾 บันทึกและพิมพ์ฉลาก";
+        saveBtn.disabled = false; saveBtn.innerHTML = "💾 บันทึกและพิมพ์ฉลาก";
       }
     }
   </script>
