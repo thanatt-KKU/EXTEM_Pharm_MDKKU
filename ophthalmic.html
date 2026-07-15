@@ -98,14 +98,6 @@
       transition: all 0.1s; cursor: pointer;
     }
     .calc-btn:active { background: #cbd5e1; transform: scale(0.95); }
-
-    @media print {
-      body { background: white !important; color: black !important; padding: 0 !important; }
-      .no-print { display: none !important; }
-      .print-only-worksheet { display: block !important; position: absolute; top: 0; left: 0; width: 100%; }
-      .main-form-content { display: none !important; }
-      #calcWidget, #calcToggleBtn { display: none !important; }
-    }
   </style>
 </head>
 <body class="p-4 md:p-8 relative">
@@ -114,7 +106,7 @@
   <div id="mainApp" class="max-w-4xl mx-auto main-form-content">
 
     <!-- Top Bar -->
-    <div class="flex flex-wrap items-center gap-2 mb-4 no-print">
+    <div class="flex flex-wrap items-center gap-2 mb-4">
       <span class="text-xs font-bold text-slate-300 uppercase tracking-tight">ผู้บันทึกห้อง Sterile:</span>
       <span id="displayUserName" class="text-sm font-black px-3 py-1 bg-white rounded-xl shadow-sm" style="color:#2c4a63;">-</span>
       <span id="demoBadge" class="hidden inline-block bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full ml-1">Demo Mode</span>
@@ -128,7 +120,7 @@
     <div class="space-y-6">
 
       <!-- HEADER -->
-      <header class="gradient-header p-8 rounded-3xl shadow-xl no-print">
+      <header class="gradient-header p-8 rounded-3xl shadow-xl">
         <div class="flex justify-between items-center text-white">
           <div>
             <h1 class="text-2xl font-black uppercase tracking-tight flex items-center gap-2">
@@ -157,7 +149,7 @@
           </div>
           <div>
             <label class="field-label">ชื่อ-นามสกุล</label>
-            <input type="text" id="patientName" placeholder="ดึงข้อมูลอัตโนมัติ/คีย์สด" class="input-field" oninput="syncWorksheetValues()">
+            <input type="text" id="patientName" placeholder="ดึงข้อมูลอัตโนมัติ/คีย์สด" class="input-field">
           </div>
           <div class="relative">
             <label class="field-label">Ward</label>
@@ -221,15 +213,12 @@
         </div>
       </section>
 
-      <!-- BLOCK 3: 🧮 ช่วยคำนวณสูตรผสม / แบ่งสัดส่วนบรรจุ (ตรงตาม Excel บรีฟใหม่) -->
+      <!-- BLOCK 3: 🧮 ช่วยคำนวณสูตรผสม / แบ่งสัดส่วนบรรจุ -->
       <section class="bg-amber-50/40 p-6 rounded-2xl card-shadow border-2 border-dashed border-amber-300 space-y-4">
         <div class="flex justify-between items-center flex-wrap gap-2">
           <h2 class="text-base font-black text-amber-900 flex items-center gap-2">
-            <span>🧮</span> ขั้นตอนคำนวณปริมาณสารละลายยาตาและการจัดทำใบ Worksheet
+            <span>🧮</span> ขั้นตอนคำนวณปริมาณสารละลายยาตาและการจัดสรรปริมาตร
           </h2>
-          <button onclick="printWorksheet()" class="bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-md">
-            🖨️ พิมพ์เฉพาะใบ Worksheet ผสมยา
-          </button>
         </div>
         
         <!-- ส่วนที่ 1: การดูดสารตั้งต้นและการเจือจาง -->
@@ -243,14 +232,13 @@
             <input type="number" id="calc-active-vol" placeholder="0.0" step="0.01" class="input-field text-center font-black text-amber-800" style="max-width:90px;" oninput="calculateTotalMix()">
             <span>ml</span>
             
-            <!-- ตัวเลือกเชื่อมประโยคสูตรผสมตามรูปแบบรูปตัวอย่าง -->
             <select id="calc-mix-type" class="select-field text-center font-black" style="max-width:110px;" onchange="calculateTotalMix()">
               <option value="+"> + (บวกสาร)</option>
               <option value="qs"> qs to (ให้ครบ)</option>
             </select>
 
             <span>กรอกชื่อสารน้ำ:</span>
-            <input type="text" id="calc-diluent-name" value="NSS" placeholder="NSS, D5W, Water" class="input-field text-center" style="max-width:110px;" oninput="syncWorksheetValues()">
+            <input type="text" id="calc-diluent-name" value="NSS" placeholder="NSS, D5W, Water" class="input-field text-center" style="max-width:110px;">
             
             <span>ปริมาตรสารน้ำ:</span>
             <input type="number" id="calc-diluent-vol" placeholder="0" step="0.1" class="input-field text-center font-black" style="max-width:90px;" oninput="calculateTotalMix()">
@@ -265,10 +253,9 @@
 
         <!-- ส่วนที่ 2: การแบ่งจัดสรรบรรจุภัณฑ์และยอดเพาะเชื้อ -->
         <div class="bg-white p-5 rounded-xl border border-amber-200 space-y-4">
-          <div class="text-xs font-black text-amber-800 uppercase tracking-wider border-b border-amber-100 pb-2">📦 แผนจัดสรรแบ่งบรรจุสำเร็จ (Worksheet Allocation)</div>
+          <div class="text-xs font-black text-amber-800 uppercase tracking-wider border-b border-amber-100 pb-2">📦 แผนจัดสรรแบ่งบรรจุสำเร็จ</div>
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- บรรทัดย่อยที่ 1 -->
             <div class="flex items-center gap-2 text-xs font-bold">
               <span class="w-24 text-slate-500">บรรทัดที่ 1:</span>
               <input type="number" id="alloc-vol-1" placeholder="ขวดละ ml" class="input-field text-center" oninput="calculateTotalMix()">
@@ -276,7 +263,6 @@
               <input type="number" id="alloc-cnt-1" placeholder="จำนวนขวด" class="input-field text-center" oninput="calculateTotalMix()">
               <span>ขวด</span>
             </div>
-            <!-- บรรทัดย่อยที่ 2 (กรณีเพิ่มสำรองส่งตรวจ/หอผู้ป่วย) -->
             <div class="flex items-center gap-2 text-xs font-bold">
               <span class="w-24 text-slate-500">บรรทัดที่ 2:</span>
               <input type="number" id="alloc-vol-2" placeholder="ขวดละ ml" class="input-field text-center" oninput="calculateTotalMix()">
@@ -347,7 +333,7 @@
           <p class="text-xs font-black uppercase tracking-widest text-slate-500">📋 ตัวแปรแจงโครงสร้างคำสั่งใช้ยาตา</p>
           <div class="flex items-center gap-3 flex-wrap">
             <span class="text-sm font-bold text-slate-700">หยอดตาข้างที่เลือก ครั้งละ</span>
-            <input type="number" id="dosePerTime" placeholder="0" step="1" class="input-field text-xl font-black text-center" style="max-width:100px; color:#2c4a63;" oninput="buildSigText()">
+            <input type="text" id="dosePerTime" placeholder="เช่น 1, 1-2" class="input-field text-xl font-black text-center" style="max-width:140px; color:#2c4a63;" oninput="buildSigText()">
             <span class="text-sm font-black text-slate-700">หยด</span>
           </div>
           <div class="flex items-center gap-3 flex-wrap">
@@ -419,12 +405,12 @@
   </div>
 
   <!-- TOGGLE SIDE CALCULATOR WIDGET BUTTON -->
-  <button id="calcToggleBtn" onclick="toggleCalc()" class="fixed bottom-6 right-6 no-print bg-amber-500 text-white font-black p-4 rounded-full shadow-2xl hover:bg-amber-600 transition-all z-50 text-xl flex items-center justify-center w-14 h-14">
+  <button id="calcToggleBtn" onclick="toggleCalc()" class="fixed bottom-6 right-6 bg-amber-500 text-white font-black p-4 rounded-full shadow-2xl hover:bg-amber-600 transition-all z-50 text-xl flex items-center justify-center w-14 h-14">
     🧮
   </button>
 
   <!-- SIDE CALCULATOR WIDGET BOX -->
-  <div id="calcWidget" class="fixed bottom-24 right-6 no-print bg-slate-900 border border-slate-700 p-4 rounded-2xl w-64 hidden flex flex-col space-y-3">
+  <div id="calcWidget" class="fixed bottom-24 right-6 bg-slate-900 border border-slate-700 p-4 rounded-2xl w-64 hidden flex flex-col space-y-3">
     <div class="flex justify-between items-center text-white font-bold text-xs">
       <span>⚙️ Quick Calculator</span>
       <button onclick="toggleCalc()" class="text-red-400 hover:text-red-500">✕ ปิด</button>
@@ -448,70 +434,6 @@
       <div onclick="pressCalc('=')" class="calc-btn bg-amber-500 text-white row-span-2 flex items-center justify-center font-black">=</div>
       <div onclick="pressCalc('0')" class="calc-btn col-span-2">0</div>
       <div onclick="pressCalc('.')" class="calc-btn">.</div>
-    </div>
-  </div>
-
-  <!-- ======================================================== -->
-  <!-- 🖨️ PRINTABLE ONLY: ใบ Worksheet เปิดให้แก้ไขคำสดได้อิสระก่อนพริ้นท์ -->
-  <!-- ======================================================== -->
-  <div id="printWorksheetSection" class="hidden print-only-worksheet bg-white p-8 text-black text-xs space-y-6">
-    <div class="text-center border-b-2 border-black pb-4">
-      <h1 class="text-xl font-bold uppercase">Worksheet สำหรับเตรียมยาตาปราศจากเชื้อ (Sterile Eye Drop)</h1>
-      <p class="text-sm mt-1">โรงพยาบาลศรีนครินทร์ คณะแพทยศาสตร์ มหาวิทยาลัยขอนแก่น</p>
-    </div>
-
-    <div class="grid grid-cols-2 gap-4 border p-4 rounded-xl text-sm">
-      <div><strong>HN:</strong> <span id="ws-lbl-hn">-</span></div>
-      <div><strong>ชื่อ-นามสกุล คนไข้:</strong> <span id="ws-lbl-name">-</span></div>
-      <div><strong>Ward/หอผู้ป่วย:</strong> <span id="ws-lbl-ward">-</span></div>
-      <div><strong>เลขที่ควบคุมการผลิต (LOT):</strong> <span id="ws-lbl-lot" class="font-bold underline text-base">-</span></div>
-    </div>
-
-    <div>
-      <h3 class="text-sm font-bold border-b pb-1 mb-2">🔬 รายละเอียดคำสั่งบันทึกการผลิตและสูตรผสม (คลิกพิมพ์แก้ไขข้อความสดได้)</h3>
-      <table class="w-full border-collapse border border-black text-left text-sm">
-        <thead>
-          <tr class="bg-slate-100">
-            <th class="border border-black p-2 w-1/2">หัวข้อรายการควบคุม</th>
-            <th class="border border-black p-2 w-1/2">ข้อมูลผลลัพธ์หน้า Cleanroom</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="border border-black p-2 font-bold">ตัวยาตั้งต้นที่เลือก</td>
-            <td id="ws-lbl-product" contenteditable="true" class="border border-black p-2 font-bold bg-amber-50/50">-</td>
-          </tr>
-          <tr>
-            <td class="border border-black p-2 font-bold">ขั้นตอนกระบวนการดูดและเจือจางยา</td>
-            <td id="ws-lbl-formula" contenteditable="true" class="border border-black p-2 bg-amber-50/50 font-bold text-blue-900">-</td>
-          </tr>
-          <tr>
-            <td class="border border-black p-2">ปริมาตรรวมของสารละลายที่ผสมได้</td>
-            <td id="ws-lbl-mix-total" contenteditable="true" class="border border-black p-2 bg-amber-50/50">-</td>
-          </tr>
-          <tr>
-            <td class="border border-black p-2">แผนจัดจ่ายแบ่งบรรจุสำเร็จจริง (Allocation)</td>
-            <td id="ws-lbl-alloc-detail" contenteditable="true" class="border border-black p-2 bg-amber-50/50">-</td>
-          </tr>
-          <tr>
-            <td class="border border-black p-2 font-bold text-red-700">ปริมาตรส่วนที่เหลือส่งตรวจเพาะเชื้อ (Sterile Audit)</td>
-            <td id="ws-lbl-remain" contenteditable="true" class="border border-black p-2 bg-amber-50/50 font-bold text-red-600">-</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="pt-16 grid grid-cols-2 gap-8 text-center text-sm">
-      <div class="space-y-8">
-        <div>.................................................................</div>
-        <div>ผู้เตรียมยา (Pharmacist / Staff)</div>
-        <div>วันที่: ....../............/............ เวลา: .............</div>
-      </div>
-      <div class="space-y-8">
-        <div>.................................................................</div>
-        <div>ผู้ตรวจสอบความถูกต้อง (Checker)</div>
-        <div>วันที่: ....../............/............ เวลา: .............</div>
-      </div>
     </div>
   </div>
 
@@ -568,16 +490,14 @@
       const diluentVol = parseFloat(document.getElementById('calc-diluent-vol').value) || 0;
       const mixType = document.getElementById('calc-mix-type').value;
       
-      // 1. คำนวณปริมาตรรวมสารละลาย
       let totalMix = 0;
       if (mixType === '+') {
         totalMix = activeVol + diluentVol;
       } else if (mixType === 'qs') {
-        totalMix = Math.max(activeVol, diluentVol); // ถ้า qs to 10ml ยอดรวมจะเป็น 10ml ทันที
+        totalMix = Math.max(activeVol, diluentVol);
       }
       document.getElementById('calc-total-mix-display').textContent = totalMix.toFixed(1);
 
-      // 2. คำนวณแผนจัดจ่ายแบ่งบรรจุ
       const v1 = parseFloat(document.getElementById('alloc-vol-1').value) || 0;
       const c1 = parseFloat(document.getElementById('alloc-cnt-1').value) || 0;
       const v2 = parseFloat(document.getElementById('alloc-vol-2').value) || 0;
@@ -586,12 +506,9 @@
       const totalAlloc = (v1 * c1) + (v2 * c2);
       document.getElementById('alloc-total-display').textContent = totalAlloc.toFixed(1);
 
-      // 3. ปริมาตรคงเหลือส่งตรวจเชื้อ
       const remaining = totalMix - totalAlloc;
       const remainEl = document.getElementById('alloc-remain-display');
       remainEl.textContent = Math.max(0, remaining).toFixed(1);
-      
-      syncWorksheetValues();
     }
 
     // =========================================
@@ -650,14 +567,13 @@
       document.getElementById('lot-seq').textContent = seqStr;
       document.getElementById('lotNumber').value = fullLot;
       document.getElementById('lot-status').textContent = `✅ LOT พร้อมใช้งาน (ลำดับ ${seq})`;
-      syncWorksheetValues();
     }
 
     function onDateChange() { generateLotNumber(); }
 
     function buildSigText() {
       const side = document.querySelector('input[name="eyeside"]:checked')?.value || 'ข้างซ้าย';
-      const dose = document.getElementById('dosePerTime').value;
+      const dose = document.getElementById('dosePerTime').value.trim();
       const times = document.getElementById('timesPerDay').value;
       const timing = document.getElementById('timingText').value;
       const warning = document.getElementById('labelWarning').value;
@@ -686,49 +602,6 @@
     function updateSummary() {
       document.getElementById('sum-volume').textContent = document.getElementById('prepVolume').value || '0';
       document.getElementById('sum-count').textContent = document.getElementById('prepCount').value;
-    }
-
-    // =========================================
-    // 🖨️ WORKSHEET SYNC & PRE-PRINT PREPARATION
-    // =========================================
-    function syncWorksheetValues() {
-      document.getElementById('ws-lbl-hn').textContent = document.getElementById('hn').value || '-';
-      document.getElementById('ws-lbl-name').textContent = document.getElementById('patientName').value || '-';
-      document.getElementById('ws-lbl-ward').textContent = document.getElementById('wardInput').value || '-';
-      document.getElementById('ws-lbl-lot').textContent = document.getElementById('lotNumber').value || '-';
-      
-      const select = document.getElementById('productSelect');
-      const brand = select.options[select.selectedIndex]?.dataset.brand || '-';
-      document.getElementById('ws-lbl-product').textContent = select.options[select.selectedIndex]?.textContent || '-';
-
-      // สร้างประโยคสูตรคำนวณการผลิตลงบนใบงาน
-      const activeVol = document.getElementById('calc-active-vol').value || '0';
-      const mixType = document.getElementById('calc-mix-type').value === '+' ? '+' : 'qs to ให้ครบ';
-      const diluentName = document.getElementById('calc-diluent-name').value || 'สารน้ำ';
-      const diluentVol = document.getElementById('calc-diluent-vol').value || '0';
-      
-      const textFormula = `ดูดยา ${brand} ปริมาตร ${activeVol} ml ${mixType} ${diluentName} ${diluentVol} ml`;
-      document.getElementById('ws-lbl-formula').textContent = textFormula;
-
-      const totalMix = document.getElementById('calc-total-mix-display').textContent || '0';
-      document.getElementById('ws-lbl-mix-total').textContent = `${totalMix} ml`;
-
-      // รายละเอียดการจัดสรรแบ่งบรรจุขวด
-      const v1 = document.getElementById('alloc-vol-1').value || '0';
-      const c1 = document.getElementById('alloc-cnt-1').value || '0';
-      const v2 = document.getElementById('alloc-vol-2').value || '0';
-      const c2 = document.getElementById('alloc-cnt-2').value || '0';
-      let allocText = `แบ่งผลิตขวดละ ${v1} ml × ${c1} ขวด`;
-      if(parseFloat(c2) > 0) allocText += ` + บรรทัดเสริมขวดละ ${v2} ml × ${c2} ขวด`;
-      document.getElementById('ws-lbl-alloc-detail').textContent = allocText;
-
-      const remain = document.getElementById('alloc-remain-display').textContent || '0';
-      document.getElementById('ws-lbl-remain').textContent = `${remain} ml`;
-    }
-
-    function printWorksheet() {
-      syncWorksheetValues();
-      window.print();
     }
 
     // =========================================
@@ -779,7 +652,6 @@
       document.getElementById('info-storage').textContent = opt.dataset.storage;
       document.getElementById('sum-product').textContent = opt.textContent;
       
-      // ดึงชื่อยี่ห้อไปแปะในกล่องสูตรคำนวณอัตโนมัติ
       document.getElementById('ws-brand-display').textContent = opt.dataset.brand;
 
       if (opt.dataset.warning) {
@@ -797,14 +669,14 @@
       document.getElementById('wardList').innerHTML = items.map(w => `<div class="p-3 hover:bg-slate-100 cursor-pointer text-center font-bold text-slate-700" onclick="selectWard('${w}')">${w}</div>`).join('');
     }
     function filterWards() { renderWards(wards.filter(w => w.toLowerCase().includes(document.getElementById('wardInput').value.toLowerCase()))); }
-    function selectWard(w) { document.getElementById('wardInput').value = w; document.getElementById('wardList').classList.add('hidden'); syncWorksheetValues(); }
+    function selectWard(w) { document.getElementById('wardInput').value = w; document.getElementById('wardList').classList.add('hidden'); }
 
     async function fetchPatientData() {
       const hn = document.getElementById('hn').value.trim();
       const status = document.getElementById('hn-status');
       if (!hn) return;
       status.innerText = "⏳ ค้นหา...";
-      if (sessionStorage.getItem('rxDemoMode') === 'true') { status.innerText = "⚠️ Demo Mode"; syncWorksheetValues(); return; }
+      if (sessionStorage.getItem('rxDemoMode') === 'true') { status.innerText = "⚠️ Demo Mode"; return; }
       try {
         const res = await fetch(`${SCRIPT_URL}?action=getLatestOrder&hn=${hn}`);
         const data = await res.json();
@@ -812,11 +684,10 @@
           document.getElementById('patientName').value = data.patientName || "";
           status.innerText = "✅ ดึงสำเร็จ"; status.style.color = "#10b981";
         } else { status.innerText = "🔹 ผู้ป่วยใหม่"; }
-        syncWorksheetValues();
       } catch(e) { status.innerText = "❌ หลุดการเชื่อมต่อ"; }
     }
 
-    function onNextApptChange() {
+    fn onNextApptChange() {
       const val = document.getElementById('nextAppointment').value;
       const display = document.getElementById('nextApptDisplay');
       if (!val) { display.textContent = ''; return; }
@@ -857,7 +728,7 @@
       formData.append("packageUnit", "ขวด");
       formData.append("expiryDays", opt.dataset.expiry);
       formData.append("storage", opt.dataset.storage);
-      formData.append("rawAmount", document.getElementById('calc-active-vol').value || "0"); // ส่งข้อมูลยอดดูดยาหลัก
+      formData.append("rawAmount", document.getElementById('calc-active-vol').value || "0");
       formData.append("prepVolume", document.getElementById('prepVolume').value || "0");
       formData.append("prepCount", document.getElementById('prepCount').value || "1");
       formData.append("dosePerTime", document.getElementById('dosePerTime').value || "0");
