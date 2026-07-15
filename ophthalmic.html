@@ -213,79 +213,7 @@
         </div>
       </section>
 
-      <!-- BLOCK 3: 🧮 ช่วยคำนวณสูตรผสม / แบ่งสัดส่วนบรรจุ -->
-      <section class="bg-amber-50/40 p-6 rounded-2xl card-shadow border-2 border-dashed border-amber-300 space-y-4">
-        <div class="flex justify-between items-center flex-wrap gap-2">
-          <h2 class="text-base font-black text-amber-900 flex items-center gap-2">
-            <span>🧮</span> ขั้นตอนคำนวณปริมาณสารละลายยาตาและการจัดสรรปริมาตร
-          </h2>
-        </div>
-        
-        <!-- ส่วนที่ 1: การดูดสารตั้งต้นและการเจือจาง -->
-        <div class="bg-white p-5 rounded-xl border border-amber-200 space-y-4">
-          <div class="text-xs font-black text-amber-800 uppercase tracking-wider border-b border-amber-100 pb-2">🧪 สูตรคำนวณการดูดสารละลายเคมี</div>
-          
-          <div class="flex flex-wrap items-center gap-3 text-sm font-bold text-slate-800">
-            <span>ดูดยาวัตถุดิบหลัก</span>
-            <span id="ws-brand-display" class="px-3 py-1 bg-slate-100 border rounded-lg text-amber-950 font-black">— ยังไม่ได้เลือกยา —</span>
-            <span>จำนวน</span>
-            <input type="number" id="calc-active-vol" placeholder="0.0" step="0.01" class="input-field text-center font-black text-amber-800" style="max-width:90px;" oninput="calculateTotalMix()">
-            <span>ml</span>
-            
-            <select id="calc-mix-type" class="select-field text-center font-black" style="max-width:110px;" onchange="calculateTotalMix()">
-              <option value="+"> + (บวกสาร)</option>
-              <option value="qs"> qs to (ให้ครบ)</option>
-            </select>
-
-            <span>กรอกชื่อสารน้ำ:</span>
-            <input type="text" id="calc-diluent-name" value="NSS" placeholder="NSS, D5W, Water" class="input-field text-center" style="max-width:110px;">
-            
-            <span>ปริมาตรสารน้ำ:</span>
-            <input type="number" id="calc-diluent-vol" placeholder="0" step="0.1" class="input-field text-center font-black" style="max-width:90px;" oninput="calculateTotalMix()">
-            <span>ml</span>
-            
-            <span class="text-slate-400 font-medium">|</span>
-            <span class="text-amber-900">ปริมาตรรวมสารละลาย:</span>
-            <span id="calc-total-mix-display" class="text-lg font-black text-amber-600 underline">0</span>
-            <span>ml</span>
-          </div>
-        </div>
-
-        <!-- ส่วนที่ 2: การแบ่งจัดสรรบรรจุภัณฑ์และยอดเพาะเชื้อ -->
-        <div class="bg-white p-5 rounded-xl border border-amber-200 space-y-4">
-          <div class="text-xs font-black text-amber-800 uppercase tracking-wider border-b border-amber-100 pb-2">📦 แผนจัดสรรแบ่งบรรจุสำเร็จ</div>
-          
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="flex items-center gap-2 text-xs font-bold">
-              <span class="w-24 text-slate-500">บรรทัดที่ 1:</span>
-              <input type="number" id="alloc-vol-1" placeholder="ขวดละ ml" class="input-field text-center" oninput="calculateTotalMix()">
-              <span>ml ×</span>
-              <input type="number" id="alloc-cnt-1" placeholder="จำนวนขวด" class="input-field text-center" oninput="calculateTotalMix()">
-              <span>ขวด</span>
-            </div>
-            <div class="flex items-center gap-2 text-xs font-bold">
-              <span class="w-24 text-slate-500">บรรทัดที่ 2:</span>
-              <input type="number" id="alloc-vol-2" placeholder="ขวดละ ml" class="input-field text-center" oninput="calculateTotalMix()">
-              <span>ml ×</span>
-              <input type="number" id="alloc-cnt-2" placeholder="จำนวนขวด" class="input-field text-center" oninput="calculateTotalMix()">
-              <span>ขวด</span>
-            </div>
-          </div>
-
-          <div class="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between text-sm font-black text-slate-800">
-            <div>
-              <span>รวมยอดแผนจ่ายใช้จริง:</span>
-              <span id="alloc-total-display" class="text-cyan-700 underline mx-1">0</span><span>ml</span>
-            </div>
-            <div class="px-4 py-2 bg-red-50 text-red-900 border border-red-200 rounded-xl">
-              <span>🔬 ที่เหลือส่งตรวจเพาะเชื้อ (Sterile Audit):</span>
-              <span id="alloc-remain-display" class="text-base font-black underline mx-1">0</span><span>ml</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- BLOCK 4: 🧪 จำนวนปริมาณผลิตภัณฑ์สำเร็จหลักสำหรับพิมพ์ฉลาก -->
+      <!-- BLOCK 3: 🧪 จำนวนปริมาณผลิตภัณฑ์สำเร็จหลักสำหรับพิมพ์ฉลาก -->
       <section class="bg-white p-6 rounded-2xl card-shadow space-y-5">
         <h2 class="section-title">🧪 ยอดสรุปสำหรับจัดพิมพ์ฉลากยาหลัก</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -309,7 +237,7 @@
         </div>
       </section>
 
-      <!-- BLOCK 5: 📝 วิธีสั่งใช้ยาและบริเวณบริหารยาตา -->
+      <!-- BLOCK 4: 📝 วิธีสั่งใช้ยาและบริเวณบริหารยาตา -->
       <section class="bg-white p-6 rounded-2xl card-shadow space-y-5">
         <h2 class="section-title">📝 วิธีสั่งใช้ยาและบริเวณบริหารดวงตา</h2>
         <div class="bg-slate-50 p-4 border border-slate-200 rounded-2xl">
@@ -360,7 +288,7 @@
         </div>
       </section>
 
-      <!-- BLOCK 6: 🏷️ LOT + Summary บันทึกผล -->
+      <!-- BLOCK 5: 🏷️ LOT + Summary บันทึกผล -->
       <section class="highlight-box shadow-2xl border-b-[12px]" style="border-color:#1b2d3c;">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-center">
           <div class="bg-white/10 p-4 rounded-2xl border border-white/20">
@@ -480,35 +408,6 @@
       document.getElementById('timesPerDay').value = times;
       document.getElementById('timingText').value = timing;
       buildSigText();
-    }
-
-    // =========================================
-    // 🧮 SYSTEM FORMULA CALCULATOR LOGIC
-    // =========================================
-    function calculateTotalMix() {
-      const activeVol = parseFloat(document.getElementById('calc-active-vol').value) || 0;
-      const diluentVol = parseFloat(document.getElementById('calc-diluent-vol').value) || 0;
-      const mixType = document.getElementById('calc-mix-type').value;
-      
-      let totalMix = 0;
-      if (mixType === '+') {
-        totalMix = activeVol + diluentVol;
-      } else if (mixType === 'qs') {
-        totalMix = Math.max(activeVol, diluentVol);
-      }
-      document.getElementById('calc-total-mix-display').textContent = totalMix.toFixed(1);
-
-      const v1 = parseFloat(document.getElementById('alloc-vol-1').value) || 0;
-      const c1 = parseFloat(document.getElementById('alloc-cnt-1').value) || 0;
-      const v2 = parseFloat(document.getElementById('alloc-vol-2').value) || 0;
-      const c2 = parseFloat(document.getElementById('alloc-cnt-2').value) || 0;
-      
-      const totalAlloc = (v1 * c1) + (v2 * c2);
-      document.getElementById('alloc-total-display').textContent = totalAlloc.toFixed(1);
-
-      const remaining = totalMix - totalAlloc;
-      const remainEl = document.getElementById('alloc-remain-display');
-      remainEl.textContent = Math.max(0, remaining).toFixed(1);
     }
 
     // =========================================
@@ -642,7 +541,7 @@
       const select = document.getElementById('productSelect');
       const opt = select.options[select.selectedIndex];
       const card = document.getElementById('productInfoCard');
-      if (!select.value) { card.classList.add('hidden'); document.getElementById('ws-brand-display').textContent = '— ยังไม่ได้เลือกยา —'; return; }
+      if (!select.value) { card.classList.add('hidden'); return; }
 
       card.classList.remove('hidden');
       document.getElementById('info-generic').textContent = opt.dataset.generic;
@@ -651,8 +550,6 @@
       document.getElementById('info-expiry-days').textContent = opt.dataset.expiry;
       document.getElementById('info-storage').textContent = opt.dataset.storage;
       document.getElementById('sum-product').textContent = opt.textContent;
-      
-      document.getElementById('ws-brand-display').textContent = opt.dataset.brand;
 
       if (opt.dataset.warning) {
         document.getElementById('autoWarningBox').classList.remove('hidden');
@@ -660,7 +557,6 @@
         document.getElementById('labelWarning').value = opt.dataset.warning;
       }
       buildSigText();
-      calculateTotalMix();
     }
 
     const wards = ["OPD PED","NICU","PICU","2ก","3ข","สว.1/8B"];
@@ -687,7 +583,7 @@
       } catch(e) { status.innerText = "❌ หลุดการเชื่อมต่อ"; }
     }
 
-    fn onNextApptChange() {
+    function onNextApptChange() {
       const val = document.getElementById('nextAppointment').value;
       const display = document.getElementById('nextApptDisplay');
       if (!val) { display.textContent = ''; return; }
@@ -728,7 +624,7 @@
       formData.append("packageUnit", "ขวด");
       formData.append("expiryDays", opt.dataset.expiry);
       formData.append("storage", opt.dataset.storage);
-      formData.append("rawAmount", document.getElementById('calc-active-vol').value || "0");
+      formData.append("rawAmount", "0"); // ส่งค่า default 0 เนื่องจากถอดฟังก์ชันเดิมออก
       formData.append("prepVolume", document.getElementById('prepVolume').value || "0");
       formData.append("prepCount", document.getElementById('prepCount').value || "1");
       formData.append("dosePerTime", document.getElementById('dosePerTime').value || "0");
